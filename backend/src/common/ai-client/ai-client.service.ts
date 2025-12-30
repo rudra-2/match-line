@@ -64,4 +64,19 @@ export class AiClientService {
       throw new Error(`AI Service is unavailable: ${errorMessage}`);
     }
   }
+
+  /**
+   * Check AI service health (non-throwing version)
+   * Returns null if service is unavailable
+   */
+  async checkHealth(): Promise<{ status: string } | null> {
+    try {
+      const response = await axios.get(`${this.aiServiceUrl}/health`, {
+        timeout: 5000, // Short timeout for health checks
+      });
+      return response.data;
+    } catch {
+      return null;
+    }
+  }
 }
