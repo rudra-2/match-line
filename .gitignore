@@ -1,9 +1,10 @@
 # Nestjs specific
 /dist
 /node_modules
+/backend/node_modules
 /build
 /tmp
-
+node_modules
 # Logs
 logs
 *.log
@@ -22,3 +23,48 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+.venv
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.db
+*.sqlite
+postgres_data/
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
