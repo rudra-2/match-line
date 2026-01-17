@@ -1,14 +1,15 @@
 """
 Core scoring engine combining embeddings, LLM, and rule-based logic
 Implements the weighted scoring algorithm
+Supports multiple LLM providers (OpenAI, Ollama, etc.)
 """
 
-from openai import OpenAI
 from typing import Dict, List
 import json
 import re
 from settings import settings
 from embeddings import EmbeddingsService
+from llm_client import LLMClient
 from prompts import get_scoring_prompt
 from utils import clean_text, extract_text_chunk, parse_json_response, validate_score_response
 
@@ -47,11 +48,9 @@ class ScoringEngine:
     """
 
     def __init__(self):
-        if not settings.OPENAI_API_KEY:
-            raise ValueError("OPENAI_API_KEY not set in environment")
-
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.llm = LLMClient()
         self.embeddings_service = EmbeddingsService()
+        print(f"✓ Scoring engine initialized with {settings.LLM_PROVIDER} LLM and {settings.EMBEDDING_PROVIDER} embeddings")
 
     def score_match(
         self, resume_text: str, job_description: str, job_requirements: str = ""
@@ -101,21 +100,14 @@ class ScoringEngine:
         self, resume_text: str, job_description: str, job_requirements: str
     ) -> Dict:
         """
-        Call GPT-4 for intelligent skill extraction and reasoning
+        Call LLM for intelligent skill extraction and reasoning
         Uses structured prompt to minimize hallucinations
+        Works with any LLM provider (OpenAI, Ollama, etc.)
         """
         prompt = get_scoring_prompt(resume_text, job_description, job_requirements)
 
         try:
-            response = self.client.chat.completions.create(
-                model=settings.OPENAI_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=settings.OPENAI_TEMPERATURE,  # Low for determinism
-                max_tokens=settings.OPENAI_MAX_TOKENS,
-            )
-
-            content = response.choices[0].message.content
-            result = parse_json_response(content)
+            result = self.llm.generate_json(prompt)
 
             if not result or not validate_score_response(result):
                 raise ValueError("Invalid LLM response format")
