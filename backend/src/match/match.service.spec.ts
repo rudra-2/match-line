@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MatchService } from './match.service';
-import { PrismaService } from '@common/prisma/prisma.service';
-import { AiClientService } from '@common/ai-client/ai-client.service';
+import { PrismaService } from '../common/prisma/prisma.service';
+import { AiClientService } from '../common/ai-client/ai-client.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('MatchService', () => {
