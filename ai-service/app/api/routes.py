@@ -1,12 +1,15 @@
 """
 FastAPI AI Service Routes
-Handles all API endpoints for scoring and health checks
+Handles all API endpoints for scoring, batch scoring, and health checks
 """
 
 from fastapi import APIRouter, HTTPException
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from app.schemas import ScoreRequest, ScoreResponse, HealthResponse
-from app.core import ScoringEngine
+from app.core import ScoringEngine, get_cache
+from app.core.batch import BatchScoreRequest, score_batch
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +52,8 @@ async def score_match(request: ScoreRequest) -> ScoreResponse:
         raise HTTPException(status_code=503, detail="AI service not initialized")
 
     try:
-        logger.info(f"Processing scoring request for resume vs job")
+        start = time.time()
+        logger.info(f"▶ Processing scoring request")
 
         result = scoring_engine.score_match(
             resume_text=request.resume_text,
@@ -57,7 +61,8 @@ async def score_match(request: ScoreRequest) -> ScoreResponse:
             job_requirements=request.job_requirements or "",
         )
 
-        logger.info(f"Scoring completed with score: {result['match_score']}")
+        elapsed = time.time() - start
+        logger.info(f"✓ Scoring completed with score: {result['match_score']} ({elapsed:.2f}s)")
         return result
 
     except ValueError as e:
@@ -66,6 +71,42 @@ async def score_match(request: ScoreRequest) -> ScoreResponse:
     except Exception as e:
         logger.error(f"Scoring error: {e}")
         raise HTTPException(status_code=500, detail=f"Scoring failed: {str(e)}")
+
+
+@router.post("/batch-score")
+async def batch_score(request: BatchScoreRequest):
+    """
+    Batch score multiple resumes against multiple jobs
+    Optimized for bulk operations with caching
+    
+    Performance: Uses embedding cache to avoid redundant API calls
+    """
+    if not scoring_engine:
+        logger.error("Scoring engine not initialized")
+        raise HTTPException(status_code=503, detail="AI service not initialized")
+
+    try:
+        logger.info(f"▶ Batch scoring {len(request.resumes)} resumes × {len(request.jobs)} jobs")
+        result = score_batch(scoring_engine, request)
+        logger.info(f"✓ Batch scoring completed: {result.total_comparisons} comparisons in {result.processing_time_seconds}s")
+        return result
+
+    except Exception as e:
+        logger.error(f"Batch scoring error: {e}")
+        raise HTTPException(status_code=500, detail=f"Batch scoring failed: {str(e)}")
+
+
+@router.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    return generate_latest()
+
+
+@router.get("/cache-stats")
+async def cache_stats():
+    """Get embedding cache statistics"""
+    cache = get_cache()
+    return cache.stats()
 
 
 @router.get("/")
@@ -77,6 +118,10 @@ async def root():
         "endpoints": {
             "health": "/health",
             "score": "/score (POST)",
+            "batch_score": "/batch-score (POST)",
+            "metrics": "/metrics",
+            "cache_stats": "/cache-stats",
             "docs": "/docs",
         },
     }
+

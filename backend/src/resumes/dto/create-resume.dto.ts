@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateResumeDto {
   @IsString()
@@ -9,6 +9,7 @@ export class CreateResumeDto {
   @IsNotEmpty()
   rawText: string;
 
+  @IsOptional()
   @IsString()
   processedText?: string;
 }

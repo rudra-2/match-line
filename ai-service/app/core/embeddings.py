@@ -7,6 +7,7 @@ Explains why embeddings are used and advantages over keyword matching
 from typing import List
 import numpy as np
 from app.config import settings
+from app.core.cache import get_cache
 import logging
 
 logger = logging.getLogger(__name__)
@@ -80,16 +81,27 @@ class EmbeddingsService:
         logger.info(f"✓ Using local embeddings: {self.model} (FREE, offline)")
 
     def get_embedding(self, text: str) -> List[float]:
-        """Generate embedding vector for text"""
+        """Generate embedding vector for text (with caching)"""
         if not text or not text.strip():
             raise ValueError("Cannot generate embedding for empty text")
 
+        # Check cache first
+        cache = get_cache()
+        cached = cache.get(text)
+        if cached:
+            return cached
+
+        # Compute embedding
         if self.provider == "openai":
-            return self._get_openai_embedding(text)
+            embedding = self._get_openai_embedding(text)
         elif self.provider == "ollama":
-            return self._get_ollama_embedding(text)
+            embedding = self._get_ollama_embedding(text)
         elif self.provider == "local":
-            return self._get_local_embedding(text)
+            embedding = self._get_local_embedding(text)
+
+        # Cache result
+        cache.set(text, embedding)
+        return embedding
 
     def _get_openai_embedding(self, text: str) -> List[float]:
         """Get embedding from OpenAI"""
