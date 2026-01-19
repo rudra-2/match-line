@@ -5,8 +5,11 @@ Allows easy switching between providers without code changes
 """
 
 from typing import Dict, Optional
-from settings import settings
+from app.config import settings
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -50,7 +53,7 @@ class LLMClient:
         from openai import OpenAI
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_MODEL
-        print(f"✓ Using OpenAI LLM: {self.model}")
+        logger.info(f"✓ Using OpenAI LLM: {self.model}")
 
     def _init_ollama(self):
         """Initialize Ollama client (FREE, local)"""
@@ -64,15 +67,7 @@ class LLMClient:
             response = requests.get(f"{self.base_url}/api/tags", timeout=5)
             if response.status_code != 200:
                 raise ConnectionError("Ollama not running")
-            
-            # Check if model is available
-            models = response.json().get("models", [])
-            model_names = [m.get("name", "").split(":")[0] for m in models]
-            
-            if self.model not in model_names:
-                print(f"⚠ Model '{self.model}' not found. Run: ollama pull {self.model}")
-            
-            print(f"✓ Using Ollama LLM: {self.model} (FREE, local)")
+            logger.info(f"✓ Using Ollama LLM: {self.model} (FREE, local)")
         except Exception as e:
             raise ConnectionError(
                 f"Ollama not accessible at {self.base_url}. "
@@ -90,13 +85,10 @@ class LLMClient:
             base_url=settings.CUSTOM_API_URL
         )
         self.model = settings.OPENAI_MODEL
-        print(f"✓ Using custom LLM API: {settings.CUSTOM_API_URL}")
+        logger.info(f"✓ Using custom LLM API: {settings.CUSTOM_API_URL}")
 
     def generate(self, prompt: str) -> str:
-        """
-        Generate completion from LLM
-        Returns: Text response
-        """
+        """Generate completion from LLM"""
         if self.provider == "openai" or self.provider == "custom":
             return self._generate_openai(prompt)
         elif self.provider == "ollama":

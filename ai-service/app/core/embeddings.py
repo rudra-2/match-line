@@ -6,7 +6,10 @@ Explains why embeddings are used and advantages over keyword matching
 
 from typing import List
 import numpy as np
-from settings import settings
+from app.config import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class EmbeddingsService:
@@ -14,12 +17,7 @@ class EmbeddingsService:
     Why Embeddings?
     ---------------
     Traditional keyword matching fails to capture semantic meaning.
-    Example:
-      - Resume: "Built scalable web services with Node.js"
-      - Job: "Requires experience in backend API development"
-      - Keyword match: LOW (few exact matches)
-      - Semantic match: HIGH (same underlying concept)
-
+    
     Embeddings convert text to high-dimensional vectors that capture meaning.
     Similar concepts cluster together in vector space, enabling:
       - Synonym recognition (API ≈ REST ≈ web service)
@@ -29,7 +27,7 @@ class EmbeddingsService:
     Provider Options:
     ----------------
     1. OpenAI: Best quality, requires API key, costs money
-    2. Ollama: FREE, runs locally, good quality (nomic-embed-text)
+    2. Ollama: FREE, runs locally, good quality
     3. Sentence Transformers: FREE, runs locally, no dependencies
     """
 
@@ -54,7 +52,7 @@ class EmbeddingsService:
         from openai import OpenAI
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_EMBEDDING_MODEL
-        print(f"✓ Using OpenAI embeddings: {self.model}")
+        logger.info(f"✓ Using OpenAI embeddings: {self.model}")
 
     def _init_ollama(self):
         """Initialize Ollama embeddings (FREE, local)"""
@@ -67,7 +65,7 @@ class EmbeddingsService:
             response = requests.get(f"{self.base_url}/api/tags", timeout=5)
             if response.status_code != 200:
                 raise ConnectionError("Ollama not running")
-            print(f"✓ Using Ollama embeddings: {self.model} (FREE, local)")
+            logger.info(f"✓ Using Ollama embeddings: {self.model} (FREE, local)")
         except Exception as e:
             raise ConnectionError(
                 f"Ollama not accessible at {self.base_url}. "
@@ -79,13 +77,10 @@ class EmbeddingsService:
         from sentence_transformers import SentenceTransformer
         self.model = settings.LOCAL_EMBEDDING_MODEL
         self.client = SentenceTransformer(self.model)
-        print(f"✓ Using local embeddings: {self.model} (FREE, offline)")
+        logger.info(f"✓ Using local embeddings: {self.model} (FREE, offline)")
 
     def get_embedding(self, text: str) -> List[float]:
-        """
-        Generate embedding vector for text
-        Returns: List of floats representing semantic meaning
-        """
+        """Generate embedding vector for text"""
         if not text or not text.strip():
             raise ValueError("Cannot generate embedding for empty text")
 
@@ -124,13 +119,7 @@ class EmbeddingsService:
         return embedding.tolist()
 
     def calculate_similarity(self, embedding1: List[float], embedding2: List[float]) -> float:
-        """
-        Calculate cosine similarity between two embeddings
-        Returns: Score 0-1 (0 = completely different, 1 = identical)
-
-        Cosine similarity formula:
-        similarity = (A · B) / (||A|| ||B||)
-        """
+        """Calculate cosine similarity between two embeddings"""
         vec1 = np.array(embedding1)
         vec2 = np.array(embedding2)
 
@@ -142,15 +131,10 @@ class EmbeddingsService:
             return 0.0
 
         similarity = dot_product / (norm1 * norm2)
-
-        # Convert from [-1, 1] to [0, 100]
         return float((similarity + 1) / 2 * 100)
 
     def get_semantic_similarity(self, text1: str, text2: str) -> float:
-        """
-        One-shot semantic similarity between two texts
-        Returns: Percentage similarity 0-100
-        """
+        """Calculate semantic similarity between two texts (0-100)"""
         emb1 = self.get_embedding(text1)
         emb2 = self.get_embedding(text2)
         return self.calculate_similarity(emb1, emb2)
