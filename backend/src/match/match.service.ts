@@ -47,7 +47,7 @@ export class MatchService {
     const aiScore = await this.aiClient.scoreMatch({
       resume_text: resume.processedText || resume.rawText,
       job_description: job.description,
-      job_requirements: job.requirements,
+      job_requirements: job.requirements || undefined,
     });
 
     // Store match result in database
