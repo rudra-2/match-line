@@ -44,8 +44,9 @@ export class AiClientService {
 
       return response.data;
     } catch (error) {
-      console.error('AI Service Error:', error.message);
-      throw new Error(`Failed to score match: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('AI Service Error:', errorMessage);
+      throw new Error(`Failed to score match: ${errorMessage}`);
     }
   }
 
@@ -59,7 +60,8 @@ export class AiClientService {
       });
       return response.data;
     } catch (error) {
-      throw new Error(`AI Service is unavailable: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`AI Service is unavailable: ${errorMessage}`);
     }
   }
 }

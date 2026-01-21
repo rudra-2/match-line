@@ -1,100 +1,72 @@
 """
-FastAPI AI Service for Resume-Job Matching
-Handles all AI/ML logic: embeddings, LLM scoring, NLP
+Match-Line AI Service
+FastAPI application for intelligent resume-job matching
+Supports multiple LLM providers: OpenAI, Ollama, or custom
 """
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from typing import List, Optional
-from settings import settings
-from scoring import ScoringEngine
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import logging
+from app.config import settings
+from app.core import ScoringEngine
+from app.api import router, set_scoring_engine
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO if settings.DEBUG else logging.WARNING,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
+# Create FastAPI app
 app = FastAPI(
     title="Match-Line AI Service",
     description="Intelligent resume-job matching using embeddings and LLM",
     version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
-# Initialize scoring engine
-scoring_engine: Optional[ScoringEngine] = None
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(router)
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup"""
-    global scoring_engine
     try:
         scoring_engine = ScoringEngine()
-        logger.info("✓ AI Service initialized successfully")
+        set_scoring_engine(scoring_engine)
+        logger.info("✓ AI Service started successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize AI service: {e}")
+        logger.error(f"✗ Failed to initialize AI service: {e}")
         raise
 
 
-# Request/Response Models
-class ScoreRequest(BaseModel):
-    """Request model for scoring endpoint"""
-
-    resume_text: str = Field(..., description="Resume text content")
-    job_description: str = Field(..., description="Job description text")
-    job_requirements: Optional[str] = Field(None, description="Additional job requirements")
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info("AI Service shutting down")
 
 
-class ScoreResponse(BaseModel):
-    """Response model for scoring results"""
+if __name__ == "__main__":
+    import uvicorn
 
-    match_score: float = Field(..., description="Overall match score 0-100")
-    matched_skills: List[str] = Field(..., description="Top matched skills")
-    missing_skills: List[str] = Field(..., description="Missing critical skills")
-    experience_gap: str = Field(..., description="Experience gap: None, Minor, Moderate, Major")
-    summary: str = Field(..., description="Brief summary of the match")
-
-
-# API Endpoints
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "version": "1.0.0",
-        "service": "Match-Line AI Service",
-    }
-
-
-@app.post("/score", response_model=ScoreResponse)
-async def score_match(request: ScoreRequest):
-    """
-    Score a resume against a job description
-    Uses LLM + Embeddings for intelligent matching
-
-    Scoring Formula:
-    ---------------
-    Match Score = (0.40 × Skills) + (0.30 × Semantic) + (0.20 × Experience) + (0.10 × Keywords)
-    """
-    if not scoring_engine:
-        raise HTTPException(status_code=503, detail="AI service not initialized")
-
-    try:
-        logger.info("Processing scoring request")
-
-        result = scoring_engine.score_match(
-            resume_text=request.resume_text,
-            job_description=request.job_description,
-            job_requirements=request.job_requirements or "",
-        )
-
-        logger.info(f"Scoring completed: {result['match_score']}")
-        return result
-
-    except Exception as e:
-        logger.error(f"Scoring error: {e}")
-        raise HTTPException(status_code=500, detail=f"Scoring failed: {str(e)}")
+    uvicorn.run(
+        app,
+        host=settings.HOST,
+        port=settings.PORT,
+        log_level="info" if settings.DEBUG else "warning",
+    )
 
 
 @app.get("/")
