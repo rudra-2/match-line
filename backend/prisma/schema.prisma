@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Resume model - stores candidate resumes
+model Resume {
+  id               String     @id @default(cuid())
+  fileName         String
+  rawText          String
+  processedText    String?
+  uploadedAt       DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  // Relations
+  matches          Match[]
+  embeddings       Embedding[]
+
+  @@map("resumes")
+}
+
+// Job model - stores job descriptions
+model Job {
+  id               String     @id @default(cuid())
+  title            String
+  description      String
+  requirements     String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  // Relations
+  matches          Match[]
+  embeddings       Embedding[]
+
+  @@map("jobs")
+}
+
+// Match model - stores matching results
+model Match {
+  id               String     @id @default(cuid())
+  resumeId         String
+  jobId            String
+  matchScore       Float
+  matchedSkills    String[]   // JSON array stored as text
+  missingSkills    String[]
+  experienceGap    String     // "Major", "Minor", "None"
+  summary          String
+  scoredAt         DateTime   @default(now())
+  
+  // Relations
+  resume           Resume     @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  job              Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@unique([resumeId, jobId])
+  @@map("matches")
+}
+
+// Embedding model - stores vector embeddings for semantic search
+model Embedding {
+  id               String     @id @default(cuid())
+  resumeId         String?
+  jobId            String?
+  embedding        String     // JSON array of floats stored as string
+  type             String     // "resume" or "job"
+  createdAt        DateTime   @default(now())
+  
+  // Relations
+  resume           Resume?    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  job              Job?       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@map("embeddings")
+}
