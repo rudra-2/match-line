@@ -1,10 +1,12 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { AiClientService } from '@common/ai-client/ai-client.service';
 import { CreateMatchDto, MatchScoreResponseDto } from './dto/create-match.dto';
 
 @Injectable()
 export class MatchService {
+  private readonly logger = new Logger('MatchService');
+
   constructor(
     private prisma: PrismaService,
     private aiClient: AiClientService,
@@ -40,10 +42,12 @@ export class MatchService {
     });
 
     if (existingMatch) {
+      this.logger.debug(`Match cache hit: ${resumeId} vs ${jobId}`);
       return this.mapToDto(existingMatch);
     }
 
     // Call AI service for scoring
+    this.logger.log(`Scoring resume ${resumeId} against job ${jobId}`);
     const aiScore = await this.aiClient.scoreMatch({
       resume_text: resume.processedText || resume.rawText,
       job_description: job.description,
@@ -63,7 +67,39 @@ export class MatchService {
       },
     });
 
+    this.logger.log(`Match scored: ${match.id} (score: ${match.matchScore})`);
     return this.mapToDto(match);
+  }
+
+  /**
+   * Batch score multiple resumes against multiple jobs
+   * Optimized for bulk operations with caching
+   */
+  async batchScore(
+    resumeIds: string[],
+    jobIds: string[],
+  ): Promise<MatchScoreResponseDto[]> {
+    this.logger.log(
+      `Batch scoring ${resumeIds.length} resumes × ${jobIds.length} jobs`,
+    );
+
+    const results: MatchScoreResponseDto[] = [];
+
+    for (const resumeId of resumeIds) {
+      for (const jobId of jobIds) {
+        try {
+          const result = await this.score({ resumeId, jobId });
+          results.push(result);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to score ${resumeId} vs ${jobId}: ${error.message}`,
+          );
+        }
+      }
+    }
+
+    this.logger.log(`Batch scoring completed: ${results.length} matches`);
+    return results;
   }
 
   /**
@@ -114,6 +150,7 @@ export class MatchService {
       where: { id },
     });
 
+    this.logger.log(`Match deleted: ${id}`);
     return { message: `Match ${id} deleted successfully` };
   }
 

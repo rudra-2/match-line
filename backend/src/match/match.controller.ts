@@ -12,6 +12,11 @@ import {
 import { MatchService } from './match.service';
 import { CreateMatchDto, MatchScoreResponseDto } from './dto/create-match.dto';
 
+export class BatchScoreDto {
+  resumeIds: string[];
+  jobIds: string[];
+}
+
 @Controller('match')
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
@@ -24,6 +29,16 @@ export class MatchController {
   @HttpCode(HttpStatus.CREATED)
   async score(@Body() createMatchDto: CreateMatchDto): Promise<MatchScoreResponseDto> {
     return this.matchService.score(createMatchDto);
+  }
+
+  /**
+   * Batch score multiple resumes against multiple jobs
+   * Optimized for bulk operations
+   */
+  @Post('batch-score')
+  @HttpCode(HttpStatus.CREATED)
+  async batchScore(@Body() batchScoreDto: BatchScoreDto) {
+    return this.matchService.batchScore(batchScoreDto.resumeIds, batchScoreDto.jobIds);
   }
 
   /**
