@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: match-line-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: match_line_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matchline"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend NestJS Service (optional - can run locally too)
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: match-line-backend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=development
+  #     - DATABASE_URL=postgresql://matchline:matchline_secure_pass@postgres:5432/match_line_db
+  #     - AI_SERVICE_URL=http://ai-service:8000
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     ai-service:
+  #       condition: service_started
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/node_modules
+  #   command: npm run start:dev
+
+  # # Python AI Service
+  # ai-service:
+  #   build:
+  #     context: ./ai-service
+  #     dockerfile: Dockerfile
+  #   container_name: match-line-ai
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - PORT=8000
+  #     - HOST=0.0.0.0
+  #     - DEBUG=true
+  #   volumes:
+  #     - ./ai-service:/app
+  #   command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+    driver: local
