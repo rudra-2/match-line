@@ -4,11 +4,55 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Match-Line - AI Resume Matching</title>
-    <link
-      href="https://rsms.me/inter/inter.css"
-      rel="stylesheet"
-    />
+    <meta name="description" content="Match-Line - AI-powered resume and job matching platform using LLM and semantic embeddings for intelligent candidate screening." />
+    <meta name="keywords" content="resume matching, AI hiring, job matching, ATS, applicant tracking, semantic search" />
+    <meta name="author" content="Rudra Patel" />
+    <meta name="theme-color" content="#c4703a" />
+    <title>Match-Line | AI-Powered Resume Matching</title>
+    
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon for different devices -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    
+    <style>
+      /* Critical CSS for faster LCP */
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: #f8f6f3;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* Loading state before React hydrates */
+      #root:empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      
+      #root:empty::after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e5e1db;
+        border-top-color: #c4703a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

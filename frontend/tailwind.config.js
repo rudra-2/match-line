@@ -1,52 +1,89 @@
-module.exports = {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c3d66',
+/** @type {import('tailwindcss').Config} */
+export default {
+    content: [
+        "./index.html",
+        "./src/**/*.{js,ts,jsx,tsx}",
+    ],
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            },
+            colors: {
+                // Paper & Surface Colors
+                paper: {
+                    DEFAULT: '#f8f6f3',
+                    dark: '#edeae5',
+                },
+                surface: {
+                    DEFAULT: '#ffffff',
+                    raised: '#fcfbfa',
+                    sunken: '#f0ede8',
+                },
+                // Ink Colors
+                ink: {
+                    primary: '#2c2a26',
+                    secondary: '#5c5850',
+                    muted: '#8a8478',
+                    subtle: '#b5ada3',
+                },
+                // Accent Colors
+                accent: {
+                    primary: '#c4703a',
+                    'primary-dark': '#a85e30',
+                    secondary: '#577b5e',
+                    tertiary: '#6b7a9f',
+                },
+                // Border Colors
+                border: {
+                    light: '#e5e1db',
+                    medium: '#d4cfc7',
+                    dark: '#bfb9ae',
+                },
+                // Status Colors
+                success: {
+                    DEFAULT: '#4a7c59',
+                    light: '#e8f0ea',
+                },
+                warning: {
+                    DEFAULT: '#b8860b',
+                    light: '#faf3e3',
+                },
+                error: {
+                    DEFAULT: '#a63d3d',
+                    light: '#f8eaea',
+                },
+                info: {
+                    DEFAULT: '#4a6fa5',
+                    light: '#e8eef5',
+                },
+            },
+            borderRadius: {
+                'sm': '6px',
+                'md': '10px',
+                'lg': '14px',
+                'xl': '20px',
+            },
+            boxShadow: {
+                'skeuo': '0 1px 2px rgba(44, 42, 38, 0.08), 0 4px 8px rgba(44, 42, 38, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                'skeuo-hover': '0 2px 4px rgba(44, 42, 38, 0.08), 0 8px 16px rgba(44, 42, 38, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                'skeuo-inset': 'inset 0 2px 4px rgba(44, 42, 38, 0.08), inset 0 1px 2px rgba(44, 42, 38, 0.15)',
+            },
+            animation: {
+                'fade-in': 'fadeIn 0.3s ease forwards',
+                'slide-in': 'slideIn 0.3s ease forwards',
+            },
+            keyframes: {
+                fadeIn: {
+                    from: { opacity: '0', transform: 'translateY(8px)' },
+                    to: { opacity: '1', transform: 'translateY(0)' },
+                },
+                slideIn: {
+                    from: { opacity: '0', transform: 'translateX(-10px)' },
+                    to: { opacity: '1', transform: 'translateX(0)' },
+                },
+            },
         },
-        slate: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-        },
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
-      boxShadow: {
-        xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-        lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-        xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-        elegant: '0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08)',
-      },
-      borderRadius: {
-        DEFAULT: '0.5rem',
-        sm: '0.375rem',
-        md: '0.5rem',
-        lg: '0.75rem',
-        xl: '1rem',
-      },
     },
-  },
-  plugins: [],
+    plugins: [],
 }
