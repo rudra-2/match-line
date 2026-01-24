@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { PageContainer, PageHeader, Grid } from '@/components/Layout'
+import { PageContainer, PageHeader } from '@/components/Layout'
 import { Card, CardBody, StatsCard } from '@/components/Card'
 import { Badge, ScoreBadge } from '@/components/Badge'
 import { Button } from '@/components/Button'
@@ -18,7 +18,6 @@ import {
   ServerIcon,
   DatabaseIcon,
   SparklesIcon,
-  UploadIcon,
 } from '@/components/Icons'
 
 export const Dashboard: React.FC = () => {
@@ -287,43 +286,6 @@ export const Dashboard: React.FC = () => {
             </CardBody>
           </Card>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card hover className="animate-fade-in delay-200">
-          <CardBody className="text-center py-10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)] icon-container-soft">
-              <UploadIcon className="w-8 h-8 animate-icon-float" />
-            </div>
-            <h3 className="text-xl font-bold text-[var(--color-ink-primary)] mb-2 skeuo-embossed">
-              Upload Resume
-            </h3>
-            <p className="text-[var(--color-ink-secondary)] mb-6 max-w-xs mx-auto">
-              Add a new candidate resume to your collection for AI-powered matching.
-            </p>
-            <Link to="/resumes/upload">
-              <Button size="lg">Upload Now</Button>
-            </Link>
-          </CardBody>
-        </Card>
-
-        <Card hover className="animate-fade-in delay-300">
-          <CardBody className="text-center py-10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)] icon-container-soft">
-              <BriefcaseIcon className="w-8 h-8 animate-icon-bob" />
-            </div>
-            <h3 className="text-xl font-bold text-[var(--color-ink-primary)] mb-2 skeuo-embossed">
-              Create Job Listing
-            </h3>
-            <p className="text-[var(--color-ink-secondary)] mb-6 max-w-xs mx-auto">
-              Post a new job opportunity to match against your resume database.
-            </p>
-            <Link to="/jobs/create">
-              <Button size="lg">Create Job</Button>
-            </Link>
-          </CardBody>
-        </Card>
       </div>
     </PageContainer>
   )
