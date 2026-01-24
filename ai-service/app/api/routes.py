@@ -62,7 +62,7 @@ async def score_match(request: ScoreRequest) -> ScoreResponse:
         )
 
         elapsed = time.time() - start
-        logger.info(f"✓ Scoring completed with score: {result['match_score']} ({elapsed:.2f}s)")
+        logger.info(f"[OK] Scoring completed with score: {result['match_score']} ({elapsed:.2f}s)")
         return result
 
     except ValueError as e:
@@ -86,9 +86,9 @@ async def batch_score(request: BatchScoreRequest):
         raise HTTPException(status_code=503, detail="AI service not initialized")
 
     try:
-        logger.info(f"▶ Batch scoring {len(request.resumes)} resumes × {len(request.jobs)} jobs")
+        logger.info(f"[START] Batch scoring {len(request.resumes)} resumes x {len(request.jobs)} jobs")
         result = score_batch(scoring_engine, request)
-        logger.info(f"✓ Batch scoring completed: {result.total_comparisons} comparisons in {result.processing_time_seconds}s")
+        logger.info(f"[OK] Batch scoring completed: {result.total_comparisons} comparisons in {result.processing_time_seconds}s")
         return result
 
     except Exception as e:

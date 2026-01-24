@@ -53,7 +53,7 @@ class LLMClient:
         from openai import OpenAI
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_MODEL
-        logger.info(f"✓ Using OpenAI LLM: {self.model}")
+        logger.info(f"[OK] Using OpenAI LLM: {self.model}")
 
     def _init_ollama(self):
         """Initialize Ollama client (FREE, local)"""
@@ -67,7 +67,7 @@ class LLMClient:
             response = requests.get(f"{self.base_url}/api/tags", timeout=5)
             if response.status_code != 200:
                 raise ConnectionError("Ollama not running")
-            logger.info(f"✓ Using Ollama LLM: {self.model} (FREE, local)")
+            logger.info(f"[OK] Using Ollama LLM: {self.model} (FREE, local)")
         except Exception as e:
             raise ConnectionError(
                 f"Ollama not accessible at {self.base_url}. "
