@@ -9,6 +9,17 @@ import { useAppStore } from '@/stores/appStore'
 import { apiClient } from '@/lib/api'
 import { formatDate } from '@/utils/formatting'
 import { Link } from 'react-router-dom'
+import {
+  DocumentIcon,
+  BriefcaseIcon,
+  ChartIcon,
+  StarIcon,
+  LightningIcon,
+  ServerIcon,
+  DatabaseIcon,
+  SparklesIcon,
+  UploadIcon,
+} from '@/components/Icons'
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
@@ -18,8 +29,6 @@ export const Dashboard: React.FC = () => {
     avgScore: 0,
   })
   const [recentMatches, setRecentMatches] = useState<any[]>([])
-  const [recentResumes, setRecentResumes] = useState<any[]>([])
-  const [recentJobs, setRecentJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { setError } = useAppStore()
 
@@ -48,8 +57,6 @@ export const Dashboard: React.FC = () => {
         })
 
         setRecentMatches(matches.slice(0, 5))
-        setRecentResumes(resumesRes.data.slice(0, 3))
-        setRecentJobs(jobsRes.data.slice(0, 3))
       } catch (error) {
         setError(`Failed to load dashboard: ${error}`)
       } finally {
@@ -83,9 +90,9 @@ export const Dashboard: React.FC = () => {
               value={stats.resumes}
               subtitle="Uploaded candidates"
               icon={
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <div className="icon-hover-scale">
+                  <DocumentIcon className="w-7 h-7" />
+                </div>
               }
             />
             <StatsCard
@@ -93,9 +100,9 @@ export const Dashboard: React.FC = () => {
               value={stats.jobs}
               subtitle="Active positions"
               icon={
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+                <div className="animate-icon-wiggle-hover">
+                  <BriefcaseIcon className="w-7 h-7" />
+                </div>
               }
             />
             <StatsCard
@@ -103,9 +110,9 @@ export const Dashboard: React.FC = () => {
               value={stats.matches}
               subtitle="AI-scored pairs"
               icon={
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+                <div className="animate-icon-breathe">
+                  <ChartIcon className="w-7 h-7" />
+                </div>
               }
             />
             <StatsCard
@@ -113,9 +120,9 @@ export const Dashboard: React.FC = () => {
               value={`${stats.avgScore}%`}
               subtitle="Match quality"
               icon={
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
+                <div className="animate-icon-pulse">
+                  <StarIcon className="w-7 h-7" filled />
+                </div>
               }
             />
           </>
@@ -130,9 +137,7 @@ export const Dashboard: React.FC = () => {
             <div className="px-6 py-4 border-b border-[var(--border-light)] bg-[var(--color-surface-raised)] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+                  <LightningIcon className="w-5 h-5 animate-icon-pulse" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-[var(--color-ink-primary)] skeuo-embossed">
@@ -160,7 +165,7 @@ export const Dashboard: React.FC = () => {
               ) : recentMatches.length === 0 ? (
                 <div className="p-8">
                   <EmptyState
-                    icon="📊"
+                    icon={<ChartIcon className="w-8 h-8" />}
                     title="No matches yet"
                     description="Score a resume against a job to see your first match result here."
                     action={
@@ -182,8 +187,8 @@ export const Dashboard: React.FC = () => {
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-[var(--color-surface-sunken)] flex items-center justify-center text-xl">
-                        📄
+                      <div className="w-12 h-12 rounded-lg bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)] icon-hover-scale">
+                        <DocumentIcon className="w-6 h-6" />
                       </div>
                       <div>
                         <p className="font-medium text-[var(--color-ink-primary)]">
@@ -226,17 +231,26 @@ export const Dashboard: React.FC = () => {
                   <p className="text-sm text-[var(--color-success)]">All services online</p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[var(--color-ink-muted)]">Backend API</span>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
+                    <ServerIcon className="w-4 h-4" />
+                    <span>Backend API</span>
+                  </div>
                   <Badge variant="success" size="sm">Active</Badge>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[var(--color-ink-muted)]">AI Service</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
+                    <SparklesIcon className="w-4 h-4 animate-icon-breathe" />
+                    <span>AI Service</span>
+                  </div>
                   <Badge variant="success" size="sm">Active</Badge>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[var(--color-ink-muted)]">Database</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
+                    <DatabaseIcon className="w-4 h-4" />
+                    <span>Database</span>
+                  </div>
                   <Badge variant="success" size="sm">Active</Badge>
                 </div>
               </div>
@@ -246,9 +260,12 @@ export const Dashboard: React.FC = () => {
           {/* Scoring Formula */}
           <Card className="animate-fade-in delay-100">
             <CardBody>
-              <h4 className="font-semibold text-[var(--color-ink-primary)] mb-4 skeuo-embossed">
-                Scoring Formula
-              </h4>
+              <div className="flex items-center gap-2 mb-4">
+                <SparklesIcon className="w-5 h-5 text-[var(--color-accent-primary)] animate-icon-spin-slow" />
+                <h4 className="font-semibold text-[var(--color-ink-primary)] skeuo-embossed">
+                  Scoring Formula
+                </h4>
+              </div>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-[var(--color-ink-secondary)]">Skills Overlap</span>
@@ -276,8 +293,8 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card hover className="animate-fade-in delay-200">
           <CardBody className="text-center py-10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-3xl">
-              📄
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)] icon-container-soft">
+              <UploadIcon className="w-8 h-8 animate-icon-float" />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-ink-primary)] mb-2 skeuo-embossed">
               Upload Resume
@@ -293,8 +310,8 @@ export const Dashboard: React.FC = () => {
 
         <Card hover className="animate-fade-in delay-300">
           <CardBody className="text-center py-10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-3xl">
-              💼
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)] icon-container-soft">
+              <BriefcaseIcon className="w-8 h-8 animate-icon-bob" />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-ink-primary)] mb-2 skeuo-embossed">
               Create Job Listing

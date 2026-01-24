@@ -133,7 +133,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     return (
         <div className="text-center py-12 animate-fade-in">
             {icon && (
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--color-surface-sunken)] flex items-center justify-center text-3xl text-[var(--color-ink-muted)]">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--color-surface-sunken)] flex items-center justify-center text-[var(--color-accent-primary)] border border-[var(--border-light)]">
                     {icon}
                 </div>
             )}

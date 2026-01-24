@@ -10,9 +10,18 @@ import { useAppStore } from '@/stores/appStore'
 import { apiClient } from '@/lib/api'
 import { formatDate, truncate } from '@/utils/formatting'
 import { Link } from 'react-router-dom'
+import {
+  ChartIcon,
+  DocumentIcon,
+  ClipboardIcon,
+  CheckIcon,
+  StarIcon,
+  ClockIcon,
+  TrendingUpIcon,
+} from '@/components/Icons'
 
 export const Matches: React.FC = () => {
-  const { matches, setMatches, removeMatch, error, setError } = useAppStore()
+  const { matches, setMatches, removeMatch, setError } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [selectedMatch, setSelectedMatch] = useState<any>(null)
@@ -67,6 +76,13 @@ export const Matches: React.FC = () => {
     return { label: 'Low', color: 'text-[var(--color-error)]' }
   }
 
+  const filterConfigs = [
+    { key: 'all', label: 'All Matches', icon: <ChartIcon className="w-4 h-4" /> },
+    { key: 'high', label: 'High (80+)', icon: <StarIcon className="w-4 h-4" filled /> },
+    { key: 'medium', label: 'Medium (60-80)', icon: <TrendingUpIcon className="w-4 h-4" /> },
+    { key: 'low', label: 'Low (<60)', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg> },
+  ]
+
   return (
     <PageContainer>
       <PageHeader
@@ -90,42 +106,32 @@ export const Matches: React.FC = () => {
 
       {/* Filter Buttons */}
       <div className="flex flex-wrap gap-2 mb-8">
-        {(['all', 'high', 'medium', 'low'] as const).map((f) => {
-          const configs = {
-            all: { label: 'All Matches', icon: '📊' },
-            high: { label: 'High (80+)', icon: '🌟' },
-            medium: { label: 'Medium (60-80)', icon: '👍' },
-            low: { label: 'Low (<60)', icon: '⚠️' },
-          }
-          const config = configs[f]
-
-          return (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`
-                inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
-                font-medium text-sm transition-all duration-200
-                ${filter === f
-                  ? 'skeuo-button-primary text-white'
-                  : 'skeuo-button text-[var(--color-ink-primary)]'
-                }
-              `}
-            >
-              <span>{config.icon}</span>
-              <span>{config.label}</span>
-              {f !== 'all' && (
-                <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-white/20">
-                  {matches.filter((m) => {
-                    if (f === 'high') return m.matchScore >= 80
-                    if (f === 'medium') return m.matchScore >= 60 && m.matchScore < 80
-                    return m.matchScore < 60
-                  }).length}
-                </span>
-              )}
-            </button>
-          )
-        })}
+        {filterConfigs.map((config) => (
+          <button
+            key={config.key}
+            onClick={() => setFilter(config.key as typeof filter)}
+            className={`
+              inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
+              font-medium text-sm transition-all duration-200
+              ${filter === config.key
+                ? 'skeuo-button-primary text-white'
+                : 'skeuo-button text-[var(--color-ink-primary)]'
+              }
+            `}
+          >
+            <span className="icon-hover-scale">{config.icon}</span>
+            <span>{config.label}</span>
+            {config.key !== 'all' && (
+              <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-white/20">
+                {matches.filter((m) => {
+                  if (config.key === 'high') return m.matchScore >= 80
+                  if (config.key === 'medium') return m.matchScore >= 60 && m.matchScore < 80
+                  return m.matchScore < 60
+                }).length}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Matches Grid */}
@@ -139,7 +145,7 @@ export const Matches: React.FC = () => {
         <Card className="animate-fade-in">
           <CardBody className="py-12">
             <EmptyState
-              icon="📊"
+              icon={<ChartIcon className="w-8 h-8 animate-icon-bob" />}
               title={matches.length === 0 ? 'No matches yet' : 'No matches found'}
               description={
                 matches.length === 0
@@ -175,11 +181,7 @@ export const Matches: React.FC = () => {
                 <CardHeader
                   title={`Match #${match.id.slice(0, 8)}`}
                   subtitle={formatDate(match.scoredAt)}
-                  icon={
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  }
+                  icon={<ChartIcon className="w-5 h-5 icon-hover-scale" />}
                   action={<ScoreBadge score={match.matchScore} size="lg" />}
                 />
 
@@ -195,9 +197,9 @@ export const Matches: React.FC = () => {
                       </span>
                     </div>
                     {/* Progress Bar */}
-                    <div className="h-3 bg-[var(--color-surface)] rounded-full overflow-hidden border border-[var(--border-light)]">
+                    <div className="h-2.5 bg-[var(--color-surface)] rounded-full overflow-hidden border border-[var(--border-light)]">
                       <div
-                        className={`h-full transition-all duration-500 ${match.matchScore >= 80
+                        className={`h-full transition-all duration-700 ease-out ${match.matchScore >= 80
                             ? 'bg-[var(--color-success)]'
                             : match.matchScore >= 60
                               ? 'bg-[var(--color-info)]'
@@ -212,7 +214,10 @@ export const Matches: React.FC = () => {
 
                   {/* Experience Gap */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-[var(--color-ink-muted)]">Experience Gap</span>
+                    <div className="flex items-center gap-2 text-sm text-[var(--color-ink-muted)]">
+                      <ClockIcon className="w-4 h-4" />
+                      <span>Experience Gap</span>
+                    </div>
                     <Badge
                       variant={
                         match.experienceGap === 'None'
@@ -237,9 +242,10 @@ export const Matches: React.FC = () => {
 
                   {/* Skills Preview */}
                   <div>
-                    <p className="text-xs font-semibold text-[var(--color-ink-muted)] uppercase tracking-wide mb-2">
-                      Skills Match
-                    </p>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-ink-muted)] uppercase tracking-wide mb-2">
+                      <CheckIcon className="w-3.5 h-3.5" />
+                      <span>Skills Match</span>
+                    </div>
                     <div className="flex flex-wrap gap-1.5">
                       {match.matchedSkills.slice(0, 3).map((skill: string) => (
                         <SkillBadge key={skill} skill={skill} matched={true} />
@@ -258,11 +264,7 @@ export const Matches: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleViewDetails(match)}
-                    leftIcon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    }
+                    leftIcon={<ClipboardIcon className="w-4 h-4" />}
                   >
                     Full Analysis
                   </Button>
@@ -297,7 +299,10 @@ export const Matches: React.FC = () => {
           <div className="space-y-6">
             {/* Score Overview */}
             <div className="text-center p-6 skeuo-sunken rounded-xl">
-              <div className="text-6xl font-bold text-[var(--color-ink-primary)] skeuo-embossed mb-2">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--color-surface)] flex items-center justify-center border border-[var(--border-light)]">
+                <StarIcon className="w-10 h-10 text-[var(--color-accent-primary)] animate-icon-breathe" filled />
+              </div>
+              <div className="text-5xl font-bold text-[var(--color-ink-primary)] skeuo-embossed mb-2">
                 {selectedMatch.matchScore}%
               </div>
               <p className={`text-lg font-semibold ${getScoreLevel(selectedMatch.matchScore).color}`}>
@@ -311,9 +316,7 @@ export const Matches: React.FC = () => {
             {/* Summary */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <svg className="w-5 h-5 text-[var(--color-accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <DocumentIcon className="w-5 h-5 text-[var(--color-accent-primary)]" />
                 <h4 className="font-semibold text-[var(--color-ink-primary)]">AI Summary</h4>
               </div>
               <div className="skeuo-sunken p-4 rounded-lg">
@@ -327,9 +330,7 @@ export const Matches: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <svg className="w-5 h-5 text-[var(--color-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <CheckIcon className="w-5 h-5 text-[var(--color-success)]" />
                   <h4 className="font-semibold text-[var(--color-ink-primary)]">
                     Matched Skills ({selectedMatch.matchedSkills.length})
                   </h4>
@@ -373,9 +374,7 @@ export const Matches: React.FC = () => {
             {/* Experience Gap */}
             <div className="skeuo-sunken p-4 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-[var(--color-accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <ClockIcon className="w-5 h-5 text-[var(--color-accent-primary)]" />
                 <span className="font-medium text-[var(--color-ink-primary)]">Experience Gap</span>
               </div>
               <Badge

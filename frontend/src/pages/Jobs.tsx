@@ -10,9 +10,10 @@ import { useAppStore } from '@/stores/appStore'
 import { apiClient } from '@/lib/api'
 import { formatDate, truncate } from '@/utils/formatting'
 import { Link } from 'react-router-dom'
+import { BriefcaseIcon, ClockIcon, AwardIcon, ClipboardIcon } from '@/components/Icons'
 
 export const Jobs: React.FC = () => {
-  const { jobs, setJobs, removeJob, error, setError } = useAppStore()
+  const { jobs, setJobs, removeJob, setError } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [selectedJob, setSelectedJob] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
@@ -83,7 +84,7 @@ export const Jobs: React.FC = () => {
         <Card className="animate-fade-in">
           <CardBody className="py-12">
             <EmptyState
-              icon="💼"
+              icon={<BriefcaseIcon className="w-8 h-8 animate-icon-bob" />}
               title="No job listings yet"
               description="Create your first job posting to start matching candidates."
               action={
@@ -105,11 +106,7 @@ export const Jobs: React.FC = () => {
             >
               <CardHeader
                 title={job.title}
-                icon={
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                }
+                icon={<BriefcaseIcon className="w-5 h-5 icon-hover-scale" />}
                 action={
                   <Badge variant="info" icon={
                     <span className="relative flex h-2 w-2 mr-1">
@@ -131,9 +128,10 @@ export const Jobs: React.FC = () => {
 
                 {job.requirements && (
                   <div className="skeuo-sunken p-3 rounded-lg">
-                    <p className="text-xs font-semibold text-[var(--color-ink-muted)] uppercase tracking-wide mb-2">
-                      Required Skills
-                    </p>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-ink-muted)] uppercase tracking-wide mb-2">
+                      <AwardIcon className="w-3.5 h-3.5" />
+                      <span>Required Skills</span>
+                    </div>
                     <p className="text-sm text-[var(--color-ink-secondary)]">
                       {truncate(job.requirements, 80)}
                     </p>
@@ -142,9 +140,7 @@ export const Jobs: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-xs text-[var(--color-ink-muted)]">
                   <div className="flex items-center gap-1.5">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                    <ClockIcon className="w-4 h-4" />
                     <span>Posted: {formatDate(job.createdAt)}</span>
                   </div>
                 </div>
@@ -194,9 +190,7 @@ export const Jobs: React.FC = () => {
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <svg className="w-5 h-5 text-[var(--color-accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                </svg>
+                <ClipboardIcon className="w-5 h-5 text-[var(--color-accent-primary)]" />
                 <h4 className="font-semibold text-[var(--color-ink-primary)]">Job Description</h4>
               </div>
               <div className="skeuo-sunken p-4 rounded-lg">
@@ -209,9 +203,7 @@ export const Jobs: React.FC = () => {
             {selectedJob.requirements && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <svg className="w-5 h-5 text-[var(--color-accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
+                  <AwardIcon className="w-5 h-5 text-[var(--color-accent-primary)]" />
                   <h4 className="font-semibold text-[var(--color-ink-primary)]">Requirements</h4>
                 </div>
                 <div className="skeuo-sunken p-4 rounded-lg">
@@ -224,9 +216,7 @@ export const Jobs: React.FC = () => {
 
             <div className="skeuo-sunken p-4 rounded-lg text-sm text-[var(--color-ink-muted)]">
               <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <ClockIcon className="w-4 h-4" />
                 <span>Posted on {formatDate(selectedJob.createdAt)}</span>
               </div>
             </div>
