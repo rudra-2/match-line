@@ -38,15 +38,50 @@ export class FileParserService {
         try {
             // pdf-parse v2.x uses PDFParse class with options object
             const parser = new PDFParse({ data: buffer });
-            const result = await parser.getText();
+            
+            // Get text content
+            const result = await parser.getText({ parseHyperlinks: true });
             let text = result.text || "";
+
+            // Get page info including embedded hyperlinks
+            const info = await parser.getInfo({ parsePageInfo: true });
+            const allLinks: { url: string; text: string }[] = [];
+            
+            for (const page of info.pages || []) {
+                for (const link of page.links || []) {
+                    if (link.url) {
+                        allLinks.push({ url: link.url, text: link.text || "" });
+                    }
+                }
+            }
 
             const metadata: Record<string, any> = {
                 pages: result.total,
+                links: allLinks,
             };
 
             // Post-process to preserve phone numbers and emails
             text = this.enhanceExtractedText(text);
+
+            // Append embedded links that aren't visible in text
+            if (allLinks.length > 0) {
+                const linksSection: string[] = [];
+                for (const link of allLinks) {
+                    // Check if URL is already in text
+                    if (!text.includes(link.url)) {
+                        if (link.text && link.text !== link.url) {
+                            linksSection.push(`${link.text}: ${link.url}`);
+                        } else {
+                            linksSection.push(link.url);
+                        }
+                    }
+                }
+                if (linksSection.length > 0) {
+                    // Remove duplicates
+                    const uniqueLinks = [...new Set(linksSection)];
+                    text += "\n\n--- Embedded Links ---\n" + uniqueLinks.join("\n");
+                }
+            }
 
             // Clean up parser
             await parser.destroy();
