@@ -39,8 +39,8 @@ export const apiClient = {
   uploadResumeFile: (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
+    // Don't set Content-Type header - axios will set it with correct boundary
     return api.post('/resumes/upload-file', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 60000, // 60 seconds for file upload
     })
   },
