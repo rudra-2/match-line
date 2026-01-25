@@ -20,6 +20,7 @@ import {
   AwardIcon,
   ClipboardIcon,
   ChartIcon,
+  DocumentIcon,
 } from '@/components'
 
 // Utilities
@@ -55,6 +56,11 @@ export const Jobs: React.FC = () => {
   const [scoreHistoryJob, setScoreHistoryJob] = useState<any>(null)
   const [scoreHistory, setScoreHistory] = useState<ScoreHistoryItem[]>([])
   const [loadingScores, setLoadingScores] = useState(false)
+  
+  // Resume detail state
+  const [showResumeModal, setShowResumeModal] = useState(false)
+  const [selectedResumeDetail, setSelectedResumeDetail] = useState<any>(null)
+  const [loadingResume, setLoadingResume] = useState(false)
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -102,6 +108,20 @@ export const Jobs: React.FC = () => {
       setError(`Failed to fetch score history: ${err}`)
     } finally {
       setLoadingScores(false)
+    }
+  }
+
+  const handleViewResume = async (resumeId: string) => {
+    setShowResumeModal(true)
+    setLoadingResume(true)
+    
+    try {
+      const response = await apiClient.getResume(resumeId)
+      setSelectedResumeDetail(response.data)
+    } catch (err) {
+      setError(`Failed to fetch resume: ${err}`)
+    } finally {
+      setLoadingResume(false)
     }
   }
 
@@ -344,9 +364,12 @@ export const Jobs: React.FC = () => {
                           <span className="text-lg font-bold text-[var(--color-ink-muted)]">
                             #{index + 1}
                           </span>
-                          <h4 className="font-semibold text-[var(--color-ink-primary)] truncate">
+                          <button
+                            onClick={() => handleViewResume(item.resume.id)}
+                            className="font-semibold text-[var(--color-accent-primary)] hover:underline truncate text-left cursor-pointer"
+                          >
                             {item.resume.fileName}
-                          </h4>
+                          </button>
                         </div>
                         
                         <p className="text-sm text-[var(--color-ink-secondary)] mb-3 line-clamp-2">
@@ -400,6 +423,50 @@ export const Jobs: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* Resume Detail Modal */}
+      <Modal
+        isOpen={showResumeModal}
+        onClose={() => setShowResumeModal(false)}
+        title={selectedResumeDetail?.fileName || 'Resume Details'}
+        size="lg"
+      >
+        {loadingResume ? (
+          <div className="space-y-4 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        ) : selectedResumeDetail ? (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-sm text-[var(--color-ink-muted)]">
+              <DocumentIcon className="w-4 h-4" />
+              <span>Uploaded: {formatDate(selectedResumeDetail.uploadedAt)}</span>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <ClipboardIcon className="w-5 h-5 text-[var(--color-accent-primary)]" />
+                <h4 className="font-semibold text-[var(--color-ink-primary)]">Resume Content</h4>
+              </div>
+              <div className="skeuo-sunken p-4 rounded-lg max-h-[50vh] overflow-y-auto">
+                <p className="text-sm text-[var(--color-ink-secondary)] leading-relaxed whitespace-pre-wrap">
+                  {selectedResumeDetail.processedText || selectedResumeDetail.rawText}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowResumeModal(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </PageContainer>
   )
 }
