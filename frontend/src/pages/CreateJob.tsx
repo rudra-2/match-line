@@ -16,6 +16,8 @@ import {
   BrainIcon,
   PlusIcon,
   DocumentIcon,
+  EditIcon,
+  UploadIcon,
 } from '@/components'
 
 // Utilities
@@ -171,27 +173,29 @@ export const CreateJob: React.FC = () => {
                 type="button"
                 onClick={() => setInputMode('text')}
                 className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition-all
+                  flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all
                   ${inputMode === 'text'
                     ? 'bg-[var(--color-surface)] text-[var(--color-ink-primary)] shadow-sm'
                     : 'text-[var(--color-ink-muted)] hover:text-[var(--color-ink-primary)]'
                   }
                 `}
               >
-                ✏️ Enter Text
+                <EditIcon className="w-4 h-4" />
+                Enter Text
               </button>
               <button
                 type="button"
                 onClick={() => setInputMode('file')}
                 className={`
-                  px-4 py-2 rounded-md text-sm font-medium transition-all
+                  flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all
                   ${inputMode === 'file'
                     ? 'bg-[var(--color-surface)] text-[var(--color-ink-primary)] shadow-sm'
                     : 'text-[var(--color-ink-muted)] hover:text-[var(--color-ink-primary)]'
                   }
                 `}
               >
-                📄 Upload File
+                <UploadIcon className="w-4 h-4" />
+                Upload File
               </button>
             </div>
 
