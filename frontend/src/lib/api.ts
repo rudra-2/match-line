@@ -36,6 +36,14 @@ export const apiClient = {
     rawText: string
     processedText: string
   }) => api.post('/resumes/upload', data),
+  uploadResumeFile: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/resumes/upload-file', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000, // 60 seconds for file upload
+    })
+  },
   getAllResumes: () => api.get('/resumes'),
   getResume: (id: string) => api.get(`/resumes/${id}`),
   deleteResume: (id: string) => api.delete(`/resumes/${id}`),
