@@ -57,6 +57,7 @@ export const apiClient = {
     api.post('/match/batch-score', data),
   getAllMatches: (resumeId?: string, jobId?: string) =>
     api.get('/match', { params: { resumeId, jobId } }),
+  getJobScoreHistory: (jobId: string) => api.get(`/match/job/${jobId}/scores`),
   getMatch: (id: string) => api.get(`/match/${id}`),
   deleteMatch: (id: string) => api.delete(`/match/${id}`),
 }

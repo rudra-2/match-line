@@ -19,6 +19,7 @@ import {
   ClockIcon,
   AwardIcon,
   ClipboardIcon,
+  ChartIcon,
 } from '@/components'
 
 // Utilities
@@ -26,12 +27,34 @@ import { useAppStore } from '@/stores'
 import { apiClient } from '@/lib'
 import { formatDate, truncate } from '@/utils'
 
+interface ScoreHistoryItem {
+  id: string
+  matchScore: number
+  matchedSkills: string[]
+  missingSkills: string[]
+  experienceGap: string
+  summary: string
+  scoredAt: string
+  resume: {
+    id: string
+    fileName: string
+    processedText: string
+    createdAt: string
+  }
+}
+
 export const Jobs: React.FC = () => {
   const { jobs, setJobs, removeJob, setError } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [selectedJob, setSelectedJob] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  
+  // Score history state
+  const [showScoresModal, setShowScoresModal] = useState(false)
+  const [scoreHistoryJob, setScoreHistoryJob] = useState<any>(null)
+  const [scoreHistory, setScoreHistory] = useState<ScoreHistoryItem[]>([])
+  const [loadingScores, setLoadingScores] = useState(false)
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -65,6 +88,35 @@ export const Jobs: React.FC = () => {
   const handleViewDetails = (job: any) => {
     setSelectedJob(job)
     setShowModal(true)
+  }
+
+  const handleViewScores = async (job: any) => {
+    setScoreHistoryJob(job)
+    setShowScoresModal(true)
+    setLoadingScores(true)
+    
+    try {
+      const response = await apiClient.getJobScoreHistory(job.id)
+      setScoreHistory(response.data)
+    } catch (err) {
+      setError(`Failed to fetch score history: ${err}`)
+    } finally {
+      setLoadingScores(false)
+    }
+  }
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600'
+    if (score >= 60) return 'text-yellow-600'
+    if (score >= 40) return 'text-orange-500'
+    return 'text-red-500'
+  }
+
+  const getScoreBg = (score: number) => {
+    if (score >= 80) return 'bg-green-100'
+    if (score >= 60) return 'bg-yellow-100'
+    if (score >= 40) return 'bg-orange-100'
+    return 'bg-red-100'
   }
 
   return (
@@ -161,19 +213,29 @@ export const Jobs: React.FC = () => {
               </CardBody>
 
               <CardFooter align="between">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleViewDetails(job)}
-                  leftIcon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  }
-                >
-                  View Details
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewDetails(job)}
+                    leftIcon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    }
+                  >
+                    Details
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleViewScores(job)}
+                    leftIcon={<ChartIcon className="w-4 h-4" />}
+                  >
+                    Scores
+                  </Button>
+                </div>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -234,6 +296,107 @@ export const Jobs: React.FC = () => {
                 <span>Posted on {formatDate(selectedJob.createdAt)}</span>
               </div>
             </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Score History Modal */}
+      {scoreHistoryJob && (
+        <Modal
+          isOpen={showScoresModal}
+          onClose={() => setShowScoresModal(false)}
+          title={`Score History: ${scoreHistoryJob.title}`}
+          size="xl"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm text-[var(--color-ink-muted)]">
+              <ChartIcon className="w-4 h-4" />
+              <span>Resumes ranked by match score (highest first)</span>
+            </div>
+
+            {loadingScores ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="skeuo-sunken p-4 rounded-lg animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                ))}
+              </div>
+            ) : scoreHistory.length === 0 ? (
+              <div className="skeuo-sunken p-8 rounded-lg text-center">
+                <ChartIcon className="w-12 h-12 mx-auto text-[var(--color-ink-muted)] mb-3" />
+                <p className="text-[var(--color-ink-secondary)] font-medium">No scores yet</p>
+                <p className="text-sm text-[var(--color-ink-muted)] mt-1">
+                  Score resumes against this job to see them here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                {scoreHistory.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="skeuo-sunken p-4 rounded-lg hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-lg font-bold text-[var(--color-ink-muted)]">
+                            #{index + 1}
+                          </span>
+                          <h4 className="font-semibold text-[var(--color-ink-primary)] truncate">
+                            {item.resume.fileName}
+                          </h4>
+                        </div>
+                        
+                        <p className="text-sm text-[var(--color-ink-secondary)] mb-3 line-clamp-2">
+                          {item.summary}
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {item.matchedSkills.slice(0, 4).map((skill) => (
+                            <Badge key={skill} variant="success" size="sm">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {item.matchedSkills.length > 4 && (
+                            <Badge variant="neutral" size="sm">
+                              +{item.matchedSkills.length - 4} more
+                            </Badge>
+                          )}
+                        </div>
+
+                        {item.missingSkills.length > 0 && (
+                          <div className="flex flex-wrap gap-1 text-xs">
+                            <span className="text-[var(--color-ink-muted)]">Missing:</span>
+                            {item.missingSkills.slice(0, 3).map((skill) => (
+                              <span key={skill} className="text-red-500">{skill}</span>
+                            ))}
+                            {item.missingSkills.length > 3 && (
+                              <span className="text-[var(--color-ink-muted)]">
+                                +{item.missingSkills.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-shrink-0 text-right">
+                        <div className={`text-3xl font-bold ${getScoreColor(item.matchScore)}`}>
+                          {item.matchScore}%
+                        </div>
+                        <div className={`text-xs px-2 py-0.5 rounded-full mt-1 ${getScoreBg(item.matchScore)} ${getScoreColor(item.matchScore)}`}>
+                          {item.experienceGap} gap
+                        </div>
+                        <div className="text-xs text-[var(--color-ink-muted)] mt-2">
+                          {formatDate(item.scoredAt)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </Modal>
       )}

@@ -58,6 +58,14 @@ export class MatchController {
   }
 
   /**
+   * Get all matches for a job with resume details, sorted by score desc
+   */
+  @Get('job/:jobId/scores')
+  async getJobScoreHistory(@Param('jobId') jobId: string) {
+    return this.matchService.findByJobWithResumes(jobId);
+  }
+
+  /**
    * Get a specific match result
    */
   @Get(':id')

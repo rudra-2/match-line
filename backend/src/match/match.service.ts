@@ -128,6 +128,44 @@ export class MatchService {
   }
 
   /**
+   * Get all matches for a job with resume details, sorted by score desc
+   */
+  async findByJobWithResumes(jobId: string): Promise<any[]> {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+    });
+
+    if (!job) {
+      throw new NotFoundException(`Job with ID ${jobId} not found`);
+    }
+
+    const matches = await this.prisma.match.findMany({
+      where: { jobId },
+      orderBy: { matchScore: 'desc' },
+      include: {
+        resume: {
+          select: {
+            id: true,
+            fileName: true,
+            processedText: true,
+            uploadedAt: true,
+          },
+        },
+      },
+    });
+
+    return matches.map((match) => ({
+      ...this.mapToDto(match),
+      resume: {
+        id: match.resume.id,
+        fileName: match.resume.fileName,
+        processedText: match.resume.processedText?.substring(0, 200) + '...',
+        uploadedAt: match.resume.uploadedAt,
+      },
+    }));
+  }
+
+  /**
    * Get a specific match
    */
   async findOne(id: string): Promise<MatchScoreResponseDto> {
