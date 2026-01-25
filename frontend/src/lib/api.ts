@@ -51,8 +51,8 @@ export const apiClient = {
   deleteJob: (id: string) => api.delete(`/jobs/${id}`),
 
   // Matches
-  scoreMatch: (data: { resumeId: string; jobId: string }) =>
-    api.post('/match/score', data),
+  scoreMatch: (data: { resumeId: string; jobId: string }, force: boolean = false) =>
+    api.post(`/match/score${force ? '?force=true' : ''}`, data),
   batchScore: (data: { resumeIds: string[]; jobIds: string[] }) =>
     api.post('/match/batch-score', data),
   getAllMatches: (resumeId?: string, jobId?: string) =>
