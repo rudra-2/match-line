@@ -1,13 +1,25 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PageContainer, PageHeader } from '@/components/Layout'
-import { Card, CardBody, CardFooter } from '@/components/Card'
-import { Button } from '@/components/Button'
-import { Input, TextArea } from '@/components/Input'
-import { Alert } from '@/components/Alert'
-import { useAppStore } from '@/stores/appStore'
-import { apiClient } from '@/lib/api'
-import { BriefcaseIcon, BrainIcon, PlusIcon } from '@/components/Icons'
+
+// Components
+import {
+  PageContainer,
+  PageHeader,
+  Card,
+  CardBody,
+  CardFooter,
+  Button,
+  Input,
+  TextArea,
+  Alert,
+  BriefcaseIcon,
+  BrainIcon,
+  PlusIcon,
+} from '@/components'
+
+// Utilities
+import { useAppStore } from '@/stores'
+import { apiClient } from '@/lib'
 
 export const CreateJob: React.FC = () => {
   const navigate = useNavigate()

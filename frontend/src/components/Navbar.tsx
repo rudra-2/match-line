@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 interface NavItemProps {
     to: string
@@ -34,8 +34,6 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, badge }) => {
 }
 
 export const Navbar: React.FC = () => {
-    const location = useLocation()
-
     const navItems = [
         {
             to: '/',

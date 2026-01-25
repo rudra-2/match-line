@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
-import { PageContainer, PageHeader } from '@/components/Layout'
-import { Card, CardBody, StatsCard } from '@/components/Card'
-import { Badge, ScoreBadge } from '@/components/Badge'
-import { Button } from '@/components/Button'
-import { StatsCardSkeleton, ListItemSkeleton } from '@/components/LoadingSkeleton'
-import { EmptyState } from '@/components/Alert'
-import { useAppStore } from '@/stores/appStore'
-import { apiClient } from '@/lib/api'
-import { formatDate } from '@/utils/formatting'
 import { Link } from 'react-router-dom'
+
+// Components
 import {
+  PageContainer,
+  PageHeader,
+  Card,
+  CardBody,
+  StatsCard,
+  Badge,
+  ScoreBadge,
+  Button,
+  StatsCardSkeleton,
+  ListItemSkeleton,
+  EmptyState,
   DocumentIcon,
   BriefcaseIcon,
   ChartIcon,
@@ -18,7 +22,12 @@ import {
   ServerIcon,
   DatabaseIcon,
   SparklesIcon,
-} from '@/components/Icons'
+} from '@/components'
+
+// Utilities
+import { useAppStore } from '@/stores'
+import { apiClient } from '@/lib'
+import { formatDate } from '@/utils'
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
