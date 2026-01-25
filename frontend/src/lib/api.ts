@@ -54,6 +54,14 @@ export const apiClient = {
     description: string
     requirements?: string
   }) => api.post('/jobs/create', data),
+  uploadJobFile: (file: File, title?: string) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (title) formData.append('title', title)
+    return api.post('/jobs/upload-file', formData, {
+      timeout: 60000,
+    })
+  },
   getAllJobs: () => api.get('/jobs'),
   getJob: (id: string) => api.get(`/jobs/${id}`),
   deleteJob: (id: string) => api.delete(`/jobs/${id}`),
