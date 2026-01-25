@@ -64,6 +64,7 @@ export const Modal: React.FC<ModalProps> = ({
           skeuo-raised paper-texture
           max-h-[90vh] flex flex-col
           animate-fade-in
+          overflow-hidden
         `}
                 role="dialog"
                 aria-modal="true"
