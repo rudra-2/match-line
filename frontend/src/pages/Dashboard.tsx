@@ -29,6 +29,12 @@ import { useAppStore } from '@/stores'
 import { apiClient } from '@/lib'
 import { formatDate } from '@/utils'
 
+interface ServiceStatus {
+  backend: 'online' | 'offline'
+  database: 'online' | 'offline'
+  ai: 'online' | 'offline'
+}
+
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
     resumes: 0,
@@ -38,7 +44,51 @@ export const Dashboard: React.FC = () => {
   })
   const [recentMatches, setRecentMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [serviceStatus, setServiceStatus] = useState<ServiceStatus>({
+    backend: 'offline',
+    database: 'offline',
+    ai: 'offline',
+  })
+  const [statusLoading, setStatusLoading] = useState(true)
   const { setError } = useAppStore()
+
+  // Check system health
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const response = await apiClient.checkHealth()
+        const services = response.data?.services
+        if (services) {
+          setServiceStatus({
+            backend: services.backend || 'offline',
+            database: services.database || 'offline',
+            ai: services.ai || 'offline',
+          })
+        } else {
+          // Backend responded but no services info
+          setServiceStatus({
+            backend: 'online',
+            database: 'offline',
+            ai: 'offline',
+          })
+        }
+      } catch {
+        // Backend is offline
+        setServiceStatus({
+          backend: 'offline',
+          database: 'offline',
+          ai: 'offline',
+        })
+      } finally {
+        setStatusLoading(false)
+      }
+    }
+
+    checkHealth()
+    // Refresh every 30 seconds
+    const interval = setInterval(checkHealth, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -74,6 +124,22 @@ export const Dashboard: React.FC = () => {
 
     fetchDashboard()
   }, [setError])
+
+  const allOnline = serviceStatus.backend === 'online' && 
+                    serviceStatus.database === 'online' && 
+                    serviceStatus.ai === 'online'
+  
+  const someOnline = serviceStatus.backend === 'online' || 
+                     serviceStatus.database === 'online' || 
+                     serviceStatus.ai === 'online'
+
+  const getOverallStatus = () => {
+    if (allOnline) return { text: 'All services online', color: 'var(--color-success)' }
+    if (someOnline) return { text: 'Some services offline', color: 'var(--color-warning)' }
+    return { text: 'All services offline', color: 'var(--color-error)' }
+  }
+
+  const overallStatus = getOverallStatus()
 
   return (
     <PageContainer>
@@ -228,15 +294,36 @@ export const Dashboard: React.FC = () => {
           <Card className="animate-fade-in">
             <CardBody>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-[var(--color-success-light)] flex items-center justify-center">
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-success)]"></span>
-                  </span>
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ 
+                    backgroundColor: allOnline 
+                      ? 'var(--color-success-light)' 
+                      : someOnline 
+                        ? 'var(--color-warning-light)' 
+                        : 'var(--color-error-light)' 
+                  }}
+                >
+                  {statusLoading ? (
+                    <div className="w-3 h-3 rounded-full bg-gray-400 animate-pulse" />
+                  ) : (
+                    <span className="relative flex h-3 w-3">
+                      <span 
+                        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                        style={{ backgroundColor: overallStatus.color }}
+                      />
+                      <span 
+                        className="relative inline-flex rounded-full h-3 w-3"
+                        style={{ backgroundColor: overallStatus.color }}
+                      />
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-[var(--color-ink-primary)]">System Status</p>
-                  <p className="text-sm text-[var(--color-success)]">All services online</p>
+                  <p className="text-sm" style={{ color: overallStatus.color }}>
+                    {statusLoading ? 'Checking...' : overallStatus.text}
+                  </p>
                 </div>
               </div>
               <div className="space-y-3 text-sm">
@@ -245,21 +332,36 @@ export const Dashboard: React.FC = () => {
                     <ServerIcon className="w-4 h-4" />
                     <span>Backend API</span>
                   </div>
-                  <Badge variant="success" size="sm">Active</Badge>
+                  <Badge 
+                    variant={serviceStatus.backend === 'online' ? 'success' : 'error'} 
+                    size="sm"
+                  >
+                    {serviceStatus.backend === 'online' ? 'Online' : 'Offline'}
+                  </Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
-                    <SparklesIcon className="w-4 h-4 animate-icon-breathe" />
+                    <SparklesIcon className={`w-4 h-4 ${serviceStatus.ai === 'online' ? 'animate-icon-breathe' : ''}`} />
                     <span>AI Service</span>
                   </div>
-                  <Badge variant="success" size="sm">Active</Badge>
+                  <Badge 
+                    variant={serviceStatus.ai === 'online' ? 'success' : 'error'} 
+                    size="sm"
+                  >
+                    {serviceStatus.ai === 'online' ? 'Online' : 'Offline'}
+                  </Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2 text-[var(--color-ink-muted)]">
                     <DatabaseIcon className="w-4 h-4" />
                     <span>Database</span>
                   </div>
-                  <Badge variant="success" size="sm">Active</Badge>
+                  <Badge 
+                    variant={serviceStatus.database === 'online' ? 'success' : 'error'} 
+                    size="sm"
+                  >
+                    {serviceStatus.database === 'online' ? 'Online' : 'Offline'}
+                  </Badge>
                 </div>
               </div>
             </CardBody>

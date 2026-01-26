@@ -3,7 +3,7 @@ Core scoring engine combining embeddings, LLM, and rule-based logic
 Implements the weighted scoring algorithm
 """
 
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 import json
 import re
 import logging
@@ -15,6 +15,85 @@ from app.utils import validate_score_response
 
 logger = logging.getLogger(__name__)
 
+# Skill patterns with all variations - pattern matches ANY of these
+SKILL_PATTERNS: List[Tuple[str, str]] = [
+    (r"\b(?:typescript)\b", "TypeScript"),
+    (r"\b(?:javascript)\b", "JavaScript"),
+    (r"\b(?:node\.?js|nodejs)\b", "Node.js"),
+    (r"\b(?:react\.?js|reactjs)\b", "React"),
+    (r"\breact\b(?!\.?js|js)", "React"),  # "react" alone
+    (r"\b(?:next\.?js|nextjs)\b", "Next.js"),
+    (r"\b(?:nest\.?js|nestjs)\b", "NestJS"),
+    (r"\b(?:express\.?js|expressjs)\b", "Express"),
+    (r"\bexpress\b(?!\.?js|js)", "Express"),  # "express" alone
+    (r"\b(?:prisma(?:\s*orm)?|prismaorm)\b", "Prisma"),
+    (r"\b(?:postgresql|postgres|psql|pgsql)\b", "PostgreSQL"),
+    (r"\b(?:mongodb|mongo)\b", "MongoDB"),
+    (r"\b(?:mysql)\b", "MySQL"),
+    (r"\b(?:python)\b", "Python"),
+    (r"\bjava\b(?!\s*script)", "Java"),  # "java" not followed by "script"
+    (r"\b(?:c\+\+|cpp)\b", "C++"),
+    (r"\b(?:c#|csharp|\.net|dotnet)\b", "C#/.NET"),
+    (r"\b(?:golang|go\s+lang)\b", "Go"),
+    (r"\b(?:rust)\b", "Rust"),
+    (r"\b(?:ruby)\b", "Ruby"),
+    (r"\b(?:php)\b", "PHP"),
+    (r"\b(?:swift)\b", "Swift"),
+    (r"\b(?:kotlin)\b", "Kotlin"),
+    (r"\b(?:docker|containerization)\b", "Docker"),
+    (r"\b(?:kubernetes|k8s)\b", "Kubernetes"),
+    (r"\b(?:aws|amazon\s*web\s*services)\b", "AWS"),
+    (r"\b(?:gcp|google\s*cloud(?:\s*platform)?)\b", "GCP"),
+    (r"\b(?:azure|microsoft\s*azure)\b", "Azure"),
+    (r"\b(?:graphql|gql)\b", "GraphQL"),
+    (r"\b(?:rest(?:ful)?(?:\s*api)?s?)\b", "REST API"),
+    (r"\b(?:sql)\b", "SQL"),
+    (r"\b(?:nosql)\b", "NoSQL"),
+    (r"\b(?:git(?!hub))\b", "Git"),  # Git but not GitHub
+    (r"\b(?:github)\b", "GitHub"),
+    (r"\b(?:gitlab)\b", "GitLab"),
+    (r"\b(?:redis)\b", "Redis"),
+    (r"\b(?:elasticsearch|elastic\s*search)\b", "Elasticsearch"),
+    (r"\b(?:kafka)\b", "Kafka"),
+    (r"\b(?:rabbitmq)\b", "RabbitMQ"),
+    (r"\b(?:tailwind(?:\s*css)?)\b", "Tailwind CSS"),
+    (r"\b(?:bootstrap)\b", "Bootstrap"),
+    (r"\b(?:html5?)\b", "HTML"),
+    (r"\b(?:css3?)\b", "CSS"),
+    (r"\b(?:sass|scss)\b", "SASS/SCSS"),
+    (r"\b(?:vue\.?js|vuejs|vue)\b", "Vue.js"),
+    (r"\b(?:angular(?:js)?)\b", "Angular"),
+    (r"\b(?:svelte)\b", "Svelte"),
+    (r"\b(?:django)\b", "Django"),
+    (r"\b(?:flask)\b", "Flask"),
+    (r"\b(?:fastapi)\b", "FastAPI"),
+    (r"\b(?:spring(?:\s*boot)?)\b", "Spring Boot"),
+    (r"\b(?:laravel)\b", "Laravel"),
+    (r"\b(?:rails|ruby\s*on\s*rails)\b", "Ruby on Rails"),
+    (r"\b(?:ci/?cd|continuous\s*integration)\b", "CI/CD"),
+    (r"\b(?:jenkins)\b", "Jenkins"),
+    (r"\b(?:terraform)\b", "Terraform"),
+    (r"\b(?:ansible)\b", "Ansible"),
+    (r"\b(?:linux)\b", "Linux"),
+    (r"\b(?:nginx)\b", "Nginx"),
+    (r"\b(?:apache)\b", "Apache"),
+    (r"\b(?:microservices?)\b", "Microservices"),
+    (r"\b(?:agile|scrum)\b", "Agile/Scrum"),
+    (r"\b(?:jira)\b", "Jira"),
+]
+
+
+def extract_skills(text: str) -> Set[str]:
+    """Extract skills from text using regex patterns"""
+    text_lower = text.lower()
+    found_skills = set()
+    
+    for pattern, skill_name in SKILL_PATTERNS:
+        if re.search(pattern, text_lower, re.IGNORECASE):
+            found_skills.add(skill_name)
+    
+    return found_skills
+
 
 class ScoringEngine:
     """
@@ -22,20 +101,10 @@ class ScoringEngine:
     -------------------------
     Match Score = (0.40 × Skills) + (0.30 × Semantic) + (0.20 × Experience) + (0.10 × Keywords)
 
-    Why LLM vs Traditional NLP:
-    Traditional NLP (regex, keyword counts):
-      ✓ Fast and deterministic
-      ✗ Cannot understand context or synonyms
-
-    LLM (GPT-4, Llama):
-      ✓ Understands context and semantics
-      ✓ Infers skills from descriptions
-      ✗ Slower and needs API
-
-    Best Practice: Hybrid approach
-      - Use embeddings for semantic similarity (fast, accurate)
-      - Use LLM for complex reasoning (skill extraction)
-      - Use rules for deterministic scoring (weighted formula)
+    Why Hybrid Approach:
+    - Use DETERMINISTIC regex for skill extraction (prevents hallucination)
+    - Use embeddings for semantic similarity (fast, accurate)
+    - Use LLM for experience gap assessment only (controlled output)
     """
 
     def __init__(self):
@@ -47,22 +116,37 @@ class ScoringEngine:
         )
 
     def score_match(self, resume_text: str, job_description: str, job_requirements: str = "") -> Dict:
-        """Main scoring function orchestrating LLM, embeddings, and weighted calculation"""
+        """Main scoring function - uses DETERMINISTIC skill matching to prevent hallucination"""
         
-        # Step 1: Get semantic similarity using embeddings (30% weight)
+        # Step 1: DETERMINISTIC skill extraction (NO LLM - prevents hallucination)
+        resume_skills = extract_skills(resume_text)
+        job_text = job_description + " " + (job_requirements or "")
+        job_skills = extract_skills(job_text)
+        
+        matched_skills = list(resume_skills & job_skills)
+        missing_skills = list(job_skills - resume_skills)
+        
+        # Calculate skill overlap percentage
+        if job_skills:
+            skill_score = (len(matched_skills) / len(job_skills)) * 100
+        else:
+            skill_score = 50  # Default if no skills detected in JD
+        
+        logger.info(f"Resume skills: {resume_skills}")
+        logger.info(f"Job skills: {job_skills}")
+        logger.info(f"Matched: {matched_skills}, Missing: {missing_skills}")
+        
+        # Step 2: Get semantic similarity using embeddings (30% weight)
         semantic_score = self.embeddings_service.get_semantic_similarity(
-            resume_text[:1000], job_description[:1000] + " " + (job_requirements[:500] or "")
+            resume_text[:1000], job_text[:1500]
         )
 
-        # Step 2: Call LLM for intelligent analysis
-        llm_result = self._call_llm_scorer(resume_text, job_description, job_requirements)
-
-        # Step 3: Calculate weighted final score
-        skill_score = llm_result.get("skill_overlap_percentage", 0)  # 40% weight
-        experience_score = self._calculate_experience_score(
-            llm_result.get("experience_gap", "Major")
-        )  # 20% weight
-        keyword_score = self._calculate_keyword_score(resume_text, job_description)  # 10% weight
+        # Step 3: Get experience gap from LLM (only this part uses LLM)
+        experience_gap = self._get_experience_gap(resume_text, job_description)
+        experience_score = self._calculate_experience_score(experience_gap)
+        
+        # Step 4: Keyword score (10% weight)
+        keyword_score = self._calculate_keyword_score(resume_text, job_description)
 
         # Final weighted score
         final_score = (
@@ -71,37 +155,49 @@ class ScoringEngine:
             + (experience_score * 0.20)
             + (keyword_score * 0.10)
         )
+        
+        # Generate summary
+        if skill_score >= 80:
+            summary = f"Excellent match! {len(matched_skills)} of {len(job_skills)} required skills found."
+        elif skill_score >= 60:
+            summary = f"Good match with {len(matched_skills)} skills. Missing: {', '.join(missing_skills[:3])}."
+        elif skill_score >= 40:
+            summary = f"Partial match. Has {len(matched_skills)} skills but missing key requirements."
+        else:
+            summary = f"Low match. Only {len(matched_skills)} of {len(job_skills)} required skills found."
 
         return {
             "match_score": round(final_score, 2),
-            "matched_skills": llm_result.get("matched_skills", [])[:5],
-            "missing_skills": llm_result.get("missing_skills", [])[:5],
-            "experience_gap": llm_result.get("experience_gap", "Unknown"),
-            "summary": llm_result.get("summary", "Analysis completed"),
+            "matched_skills": matched_skills[:5],
+            "missing_skills": missing_skills[:5],
+            "experience_gap": experience_gap,
+            "summary": summary,
         }
 
-    def _call_llm_scorer(self, resume_text: str, job_description: str, job_requirements: str) -> Dict:
-        """Call LLM for intelligent skill extraction and reasoning"""
-        prompt = get_scoring_prompt(resume_text, job_description, job_requirements)
+    def _get_experience_gap(self, resume_text: str, job_description: str) -> str:
+        """Use LLM only for experience gap assessment"""
+        prompt = f"""
+Analyze the experience level. Return ONLY one word: None, Minor, Moderate, or Major.
+
+Resume (first 500 chars): {resume_text[:500]}
+
+Job requires: {job_description[:300]}
+
+Experience gap (one word only):"""
         
-        # Log what we're sending to help debug
-        logger.debug(f"Resume text (first 200 chars): {resume_text[:200]}")
-        logger.debug(f"Job description (first 200 chars): {job_description[:200]}")
-
         try:
-            result = self.llm.generate_json(prompt)
+            result = self.llm.generate(prompt)
+            result = result.strip().strip('"').strip("'")
             
-            # Log the LLM response for debugging
-            logger.debug(f"LLM response: {result}")
-
-            if not result or not validate_score_response(result):
-                raise ValueError("Invalid LLM response format")
-
-            return result
-
+            # Validate response
+            valid_gaps = ["None", "Minor", "Moderate", "Major"]
+            for gap in valid_gaps:
+                if gap.lower() in result.lower():
+                    return gap
+            return "Moderate"  # Default
         except Exception as e:
-            logger.error(f"LLM scoring error: {e}")
-            return self._fallback_scoring(resume_text, job_description)
+            logger.error(f"Experience gap error: {e}")
+            return "Unknown"
 
     def _calculate_experience_score(self, experience_gap: str) -> float:
         """Convert experience gap to numerical score"""
@@ -129,23 +225,3 @@ class ScoringEngine:
                     matches += 1
 
         return (matches / total * 100) if total > 0 else 50
-
-    def _fallback_scoring(self, resume_text: str, job_description: str) -> Dict:
-        """Fallback scoring if LLM fails - uses basic keyword extraction"""
-        skill_pattern = r"\b(?:python|java|javascript|node\.?js|react|docker|kubernetes|aws|sql|mongodb)\b"
-
-        resume_skills = set(re.findall(skill_pattern, resume_text.lower()))
-        job_skills = set(re.findall(skill_pattern, job_description.lower()))
-
-        matched = list(resume_skills & job_skills)
-        missing = list(job_skills - resume_skills)
-
-        overlap_pct = (len(matched) / len(job_skills) * 100) if job_skills else 50
-
-        return {
-            "matched_skills": matched[:5],
-            "missing_skills": missing[:5],
-            "skill_overlap_percentage": overlap_pct,
-            "experience_gap": "Unknown",
-            "summary": "Fallback scoring - LLM unavailable",
-        }
