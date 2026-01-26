@@ -36,6 +36,14 @@ export const apiClient = {
     rawText: string
     processedText: string
   }) => api.post('/resumes/upload', data),
+  uploadResumeFile: (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    // Don't set Content-Type header - axios will set it with correct boundary
+    return api.post('/resumes/upload-file', formData, {
+      timeout: 60000, // 60 seconds for file upload
+    })
+  },
   getAllResumes: () => api.get('/resumes'),
   getResume: (id: string) => api.get(`/resumes/${id}`),
   deleteResume: (id: string) => api.delete(`/resumes/${id}`),
@@ -58,6 +66,7 @@ export const apiClient = {
   getAllMatches: (resumeId?: string, jobId?: string) =>
     api.get('/match', { params: { resumeId, jobId } }),
   getJobScoreHistory: (jobId: string) => api.get(`/match/job/${jobId}/scores`),
+  getResumeScoreHistory: (resumeId: string) => api.get(`/match/resume/${resumeId}/scores`),
   getMatch: (id: string) => api.get(`/match/${id}`),
   deleteMatch: (id: string) => api.delete(`/match/${id}`),
 }
