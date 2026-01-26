@@ -42,7 +42,7 @@ class ScoringEngine:
         self.llm = LLMClient()
         self.embeddings_service = EmbeddingsService()
         logger.info(
-            f"✓ Scoring engine initialized with {settings.LLM_PROVIDER} LLM "
+            f"[OK] Scoring engine initialized with {settings.LLM_PROVIDER} LLM "
             f"and {settings.EMBEDDING_PROVIDER} embeddings"
         )
 

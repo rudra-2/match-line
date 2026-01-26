@@ -53,7 +53,7 @@ class EmbeddingsService:
         from openai import OpenAI
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_EMBEDDING_MODEL
-        logger.info(f"✓ Using OpenAI embeddings: {self.model}")
+        logger.info(f"[OK] Using OpenAI embeddings: {self.model}")
 
     def _init_ollama(self):
         """Initialize Ollama embeddings (FREE, local)"""
@@ -66,7 +66,7 @@ class EmbeddingsService:
             response = requests.get(f"{self.base_url}/api/tags", timeout=5)
             if response.status_code != 200:
                 raise ConnectionError("Ollama not running")
-            logger.info(f"✓ Using Ollama embeddings: {self.model} (FREE, local)")
+            logger.info(f"[OK] Using Ollama embeddings: {self.model} (FREE, local)")
         except Exception as e:
             raise ConnectionError(
                 f"Ollama not accessible at {self.base_url}. "
@@ -78,7 +78,7 @@ class EmbeddingsService:
         from sentence_transformers import SentenceTransformer
         self.model = settings.LOCAL_EMBEDDING_MODEL
         self.client = SentenceTransformer(self.model)
-        logger.info(f"✓ Using local embeddings: {self.model} (FREE, offline)")
+        logger.info(f"[OK] Using local embeddings: {self.model} (FREE, offline)")
 
     def get_embedding(self, text: str) -> List[float]:
         """Generate embedding vector for text (with caching)"""

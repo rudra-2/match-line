@@ -1,108 +1,623 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   SKEUOMORPHIC LIGHT THEME - NO GRADIENTS
+   Premium tactile design system
+   ============================================ */
+
+:root {
+    /* Paper & Surface Colors */
+    --color-paper: #f8f6f3;
+    --color-paper-dark: #edeae5;
+    --color-surface: #ffffff;
+    --color-surface-raised: #fcfbfa;
+    --color-surface-sunken: #f0ede8;
+
+    /* Ink Colors */
+    --color-ink-primary: #2c2a26;
+    --color-ink-secondary: #5c5850;
+    --color-ink-muted: #8a8478;
+    --color-ink-subtle: #b5ada3;
+
+    /* Accent Colors - Warm & Natural */
+    --color-accent-primary: #c4703a;
+    --color-accent-primary-dark: #a85e30;
+    --color-accent-secondary: #577b5e;
+    --color-accent-tertiary: #6b7a9f;
+
+    /* Status Colors */
+    --color-success: #4a7c59;
+    --color-success-light: #e8f0ea;
+    --color-warning: #b8860b;
+    --color-warning-light: #faf3e3;
+    --color-error: #a63d3d;
+    --color-error-light: #f8eaea;
+    --color-info: #4a6fa5;
+    --color-info-light: #e8eef5;
+
+    /* Shadow Colors */
+    --shadow-color: rgba(44, 42, 38, 0.08);
+    --shadow-color-strong: rgba(44, 42, 38, 0.15);
+
+    /* Border Colors */
+    --border-light: #e5e1db;
+    --border-medium: #d4cfc7;
+    --border-dark: #bfb9ae;
+
+    /* Spacing */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+}
+
 * {
-  @apply transition-colors;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background-color: var(--color-paper);
+    color: var(--color-ink-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Clean button styles */
+/* ============================================
+   SKEUOMORPHIC UTILITIES
+   ============================================ */
+
+/* Raised surface - like a paper card sitting on desk */
+.skeuo-raised {
+    background-color: var(--color-surface);
+    border: 1px solid var(--border-light);
+    box-shadow:
+        0 1px 2px var(--shadow-color),
+        0 4px 8px var(--shadow-color),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-lg);
+}
+
+.skeuo-raised:hover {
+    box-shadow:
+        0 2px 4px var(--shadow-color),
+        0 8px 16px var(--shadow-color),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Pressed/Sunken surface - like embossed paper */
+.skeuo-sunken {
+    background-color: var(--color-surface-sunken);
+    border: 1px solid var(--border-medium);
+    box-shadow:
+        inset 0 2px 4px var(--shadow-color),
+        inset 0 1px 2px var(--shadow-color-strong);
+    border-radius: var(--radius-md);
+}
+
+/* Embossed text effect */
+.skeuo-embossed {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Debossed text effect */
+.skeuo-debossed {
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Button base - tactile feel */
+.skeuo-button {
+    background-color: var(--color-surface);
+    border: 1px solid var(--border-medium);
+    box-shadow:
+        0 1px 2px var(--shadow-color),
+        0 2px 4px var(--shadow-color),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border-radius: var(--radius-md);
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.skeuo-button:hover {
+    box-shadow:
+        0 2px 4px var(--shadow-color),
+        0 4px 8px var(--shadow-color),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+}
+
+.skeuo-button:active {
+    box-shadow: inset 0 1px 3px var(--shadow-color-strong);
+    transform: translateY(0);
+}
+
+/* Primary button */
+.skeuo-button-primary {
+    background-color: var(--color-accent-primary);
+    border-color: var(--color-accent-primary-dark);
+    color: white;
+    box-shadow:
+        0 1px 2px var(--shadow-color),
+        0 2px 4px rgba(196, 112, 58, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.skeuo-button-primary:hover {
+    background-color: var(--color-accent-primary-dark);
+    box-shadow:
+        0 2px 4px var(--shadow-color),
+        0 4px 8px rgba(196, 112, 58, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Input fields - paper-like feel */
+.skeuo-input {
+    background-color: var(--color-surface);
+    border: 1px solid var(--border-medium);
+    box-shadow:
+        inset 0 1px 3px var(--shadow-color),
+        0 1px 0 rgba(255, 255, 255, 0.6);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.skeuo-input:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow:
+        inset 0 1px 3px var(--shadow-color),
+        0 0 0 3px rgba(196, 112, 58, 0.15);
+}
+
+/* Notebook lines pattern for textareas */
+.skeuo-notebook {
+    background-image: repeating-linear-gradient(transparent,
+            transparent 27px,
+            var(--border-light) 27px,
+            var(--border-light) 28px);
+    line-height: 28px;
+}
+
+/* Paper texture overlay */
+.paper-texture {
+    position: relative;
+}
+
+.paper-texture::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* Divider - like a subtle crease in paper */
+.skeuo-divider {
+    height: 1px;
+    background-color: var(--border-light);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Badge - like a small sticker */
+.skeuo-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 100px;
+    border: 1px solid transparent;
+    box-shadow:
+        0 1px 2px var(--shadow-color),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-paper-dark);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-dark);
+    border-radius: 5px;
+    border: 2px solid var(--color-paper-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-muted);
+}
+
+/* Selection color */
+::selection {
+    background-color: rgba(196, 112, 58, 0.2);
+    color: var(--color-ink-primary);
+}
+
+/* ============================================
+   BASE ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.animate-pulse {
+    animation: pulse 1.5s ease infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Staggered animation delays */
+.delay-100 {
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+}
+
+.delay-300 {
+    animation-delay: 300ms;
+}
+
+.delay-400 {
+    animation-delay: 400ms;
+}
+
+/* ============================================
+   PROFESSIONAL ICON ANIMATIONS
+   Subtle, refined micro-interactions
+   ============================================ */
+
+/* Gentle float - subtle vertical motion */
+@keyframes iconFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.animate-icon-float {
+    animation: iconFloat 4s ease-in-out infinite;
+}
+
+/* Subtle pulse - opacity only, no scale */
+@keyframes iconPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.65;
+    }
+}
+
+.animate-icon-pulse {
+    animation: iconPulse 3s ease-in-out infinite;
+}
+
+/* Smooth rotation on hover */
+.animate-icon-rotate-hover {
+    transition: transform 0.4s ease;
+}
+
+.animate-icon-rotate-hover:hover {
+    transform: rotate(180deg);
+}
+
+/* Clean scale on hover */
+.icon-hover-scale {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.icon-hover-scale:hover {
+    transform: scale(1.1);
+}
+
+/* Gentle tilt on hover */
+.icon-hover-tilt {
+    transition: transform 0.2s ease;
+}
+
+.icon-hover-tilt:hover {
+    transform: rotate(-6deg);
+}
+
+/* Smooth color accent on hover */
+.icon-hover-accent {
+    transition: color 0.2s ease;
+}
+
+.icon-hover-accent:hover {
+    color: var(--color-accent-primary);
+}
+
+/* Smooth entrance */
+@keyframes iconEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-icon-enter {
+    animation: iconEnter 0.25s ease-out forwards;
+}
+
+/* Gentle bob - for active indicators */
+@keyframes iconBob {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+.animate-icon-bob {
+    animation: iconBob 2.5s ease-in-out infinite;
+}
+
+/* Subtle wiggle on hover */
+@keyframes iconWiggle {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-4deg);
+    }
+
+    75% {
+        transform: rotate(4deg);
+    }
+}
+
+.animate-icon-wiggle-hover:hover {
+    animation: iconWiggle 0.35s ease-in-out;
+}
+
+/* Refined swing - pendulum motion */
+@keyframes iconSwing {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(8deg);
+    }
+
+    75% {
+        transform: rotate(-8deg);
+    }
+}
+
+.animate-icon-swing:hover {
+    animation: iconSwing 0.6s ease-in-out;
+    transform-origin: top center;
+}
+
+/* Subtle pop on active */
+.animate-icon-pop:active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease;
+}
+
+/* Slow spin - for processing states */
+@keyframes iconSpinSlow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-icon-spin-slow {
+    animation: iconSpinSlow 4s linear infinite;
+}
+
+/* Heartbeat - subtle for notifications */
+@keyframes iconHeartbeat {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    14% {
+        transform: scale(1.04);
+    }
+
+    28% {
+        transform: scale(1);
+    }
+
+    42% {
+        transform: scale(1.04);
+    }
+
+    70% {
+        transform: scale(1);
+    }
+}
+
+.animate-icon-heartbeat {
+    animation: iconHeartbeat 2.5s ease-in-out infinite;
+}
+
+/* Icon container - clean styling */
+.icon-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    transition: background-color 0.2s ease;
+}
+
+.icon-container:hover {
+    background-color: var(--color-surface-sunken);
+}
+
+/* Soft container hover effect - no glow */
+.icon-container-soft {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.icon-container-soft:hover {
+    transform: translateY(-1px);
+    background-color: var(--color-surface-sunken);
+}
+
+/* Status indicator pulse - clean */
+@keyframes statusPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.animate-status-pulse {
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.animate-shimmer {
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.15) 50%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Breathing effect - very subtle scale */
+@keyframes iconBreathe {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.animate-icon-breathe {
+    animation: iconBreathe 4s ease-in-out infinite;
+}
+
+/* ============================================
+   COMPONENT LAYER
+   ============================================ */
+
 @layer components {
-  .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
-  }
+    .container-app {
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    }
 
-  .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
-  }
-
-  .btn-secondary {
-    @apply btn bg-slate-200 text-slate-900 hover:bg-slate-300 focus:ring-slate-500;
-  }
-
-  .btn-ghost {
-    @apply btn bg-transparent text-primary-600 hover:bg-primary-50 focus:ring-primary-500;
-  }
-
-  .btn-sm {
-    @apply px-3 py-1.5 text-sm;
-  }
-
-  .btn-lg {
-    @apply px-6 py-3 text-lg;
-  }
-
-  /* Clean input styles */
-  .input {
-    @apply px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
-  }
-
-  .input-error {
-    @apply border-red-300 focus:ring-red-500;
-  }
-
-  /* Card component */
-  .card {
-    @apply bg-white rounded-lg border border-slate-200 shadow-elegant;
-  }
-
-  .card-header {
-    @apply px-6 py-4 border-b border-slate-200;
-  }
-
-  .card-body {
-    @apply px-6 py-4;
-  }
-
-  .card-footer {
-    @apply px-6 py-4 border-t border-slate-200 bg-slate-50;
-  }
-
-  /* Badge styles */
-  .badge {
-    @apply inline-block px-2.5 py-0.5 rounded-full text-sm font-medium;
-  }
-
-  .badge-primary {
-    @apply badge bg-primary-100 text-primary-800;
-  }
-
-  .badge-success {
-    @apply badge bg-green-100 text-green-800;
-  }
-
-  .badge-warning {
-    @apply badge bg-yellow-100 text-yellow-800;
-  }
-
-  .badge-error {
-    @apply badge bg-red-100 text-red-800;
-  }
-
-  /* Loading skeleton */
-  .skeleton {
-    @apply animate-pulse bg-slate-200 rounded;
-  }
-
-  /* Nice scrollbar */
-  ::-webkit-scrollbar {
-    @apply w-2 h-2;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-slate-100 rounded;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-400 rounded hover:bg-slate-500;
-  }
+    .page-container {
+        @apply min-h-screen py-8;
+    }
 }

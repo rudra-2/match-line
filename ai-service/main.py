@@ -7,6 +7,7 @@ Supports multiple LLM providers: OpenAI, Ollama, or custom
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
+from contextlib import asynccontextmanager
 import logging
 import os
 from app.config import settings
@@ -23,6 +24,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown"""
+    # Startup
+    try:
+        scoring_engine = ScoringEngine()
+        set_scoring_engine(scoring_engine)
+        logger.info("[OK] AI Service started successfully")
+        logger.info(f"  LLM Provider: {settings.LLM_PROVIDER}")
+        logger.info(f"  Embeddings Provider: {settings.EMBEDDING_PROVIDER}")
+    except Exception as e:
+        logger.error(f"[ERROR] Failed to initialize AI service: {e}")
+        raise
+    
+    yield
+    
+    # Shutdown
+    logger.info("AI Service shutting down")
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Match-Line AI Service",
@@ -30,6 +52,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Mount Prometheus metrics app
@@ -47,26 +70,6 @@ app.add_middleware(
 
 # Include routers
 app.include_router(router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup"""
-    try:
-        scoring_engine = ScoringEngine()
-        set_scoring_engine(scoring_engine)
-        logger.info("✓ AI Service started successfully")
-        logger.info(f"  LLM Provider: {settings.LLM_PROVIDER}")
-        logger.info(f"  Embeddings Provider: {settings.EMBEDDING_PROVIDER}")
-    except Exception as e:
-        logger.error(f"✗ Failed to initialize AI service: {e}")
-        raise
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    logger.info("AI Service shutting down")
 
 
 @app.get("/")
