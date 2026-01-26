@@ -114,6 +114,7 @@ class LLMClient:
                 "model": self.model,
                 "prompt": prompt,
                 "stream": False,
+                "format": "json",  # Force JSON output format
                 "options": {
                     "temperature": self.temperature,
                     "num_predict": self.max_tokens,

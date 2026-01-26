@@ -16,7 +16,7 @@ export class MatchService {
    * Score a resume against a job using AI service
    * Flow: Fetch resume & job → Send to AI service → Store result
    */
-  async score(createMatchDto: CreateMatchDto): Promise<MatchScoreResponseDto> {
+  async score(createMatchDto: CreateMatchDto, force: boolean = false): Promise<MatchScoreResponseDto> {
     const { resumeId, jobId } = createMatchDto;
 
     // Fetch resume and job data
@@ -36,14 +36,22 @@ export class MatchService {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }
 
-    // Check if match already exists
-    let existingMatch = await this.prisma.match.findUnique({
-      where: { resumeId_jobId: { resumeId, jobId } },
-    });
+    // Check if match already exists (skip if force=true)
+    if (!force) {
+      const existingMatch = await this.prisma.match.findUnique({
+        where: { resumeId_jobId: { resumeId, jobId } },
+      });
 
-    if (existingMatch) {
-      this.logger.debug(`Match cache hit: ${resumeId} vs ${jobId}`);
-      return this.mapToDto(existingMatch);
+      if (existingMatch) {
+        this.logger.debug(`Match cache hit: ${resumeId} vs ${jobId}`);
+        return this.mapToDto(existingMatch);
+      }
+    } else {
+      // Delete existing match if force re-scoring
+      await this.prisma.match.deleteMany({
+        where: { resumeId, jobId },
+      });
+      this.logger.log(`Force re-scoring: ${resumeId} vs ${jobId}`);
     }
 
     // Call AI service for scoring
@@ -117,6 +125,44 @@ export class MatchService {
     });
 
     return matches.map((match) => this.mapToDto(match));
+  }
+
+  /**
+   * Get all matches for a job with resume details, sorted by score desc
+   */
+  async findByJobWithResumes(jobId: string): Promise<any[]> {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+    });
+
+    if (!job) {
+      throw new NotFoundException(`Job with ID ${jobId} not found`);
+    }
+
+    const matches = await this.prisma.match.findMany({
+      where: { jobId },
+      orderBy: { matchScore: 'desc' },
+      include: {
+        resume: {
+          select: {
+            id: true,
+            fileName: true,
+            processedText: true,
+            uploadedAt: true,
+          },
+        },
+      },
+    });
+
+    return matches.map((match) => ({
+      ...this.mapToDto(match),
+      resume: {
+        id: match.resume.id,
+        fileName: match.resume.fileName,
+        processedText: match.resume.processedText?.substring(0, 200) + '...',
+        uploadedAt: match.resume.uploadedAt,
+      },
+    }));
   }
 
   /**

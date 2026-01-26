@@ -1,16 +1,24 @@
 import { useEffect, useState } from 'react'
-import { PageContainer, PageHeader, Grid } from '@/components/Layout'
-import { Card, CardHeader, CardBody, CardFooter } from '@/components/Card'
-import { Button } from '@/components/Button'
-import { Badge, ScoreBadge, SkillBadge } from '@/components/Badge'
-import { CardLoadingSkeleton } from '@/components/LoadingSkeleton'
-import { EmptyState } from '@/components/Alert'
-import { Modal } from '@/components/Modal'
-import { useAppStore } from '@/stores/appStore'
-import { apiClient } from '@/lib/api'
-import { formatDate, truncate } from '@/utils/formatting'
 import { Link } from 'react-router-dom'
+
+// Components
 import {
+  PageContainer,
+  PageHeader,
+  Grid,
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Modal,
+  Button,
+  Badge,
+  ScoreBadge,
+  SkillBadge,
+  CardLoadingSkeleton,
+  EmptyState,
+  Spinner,
+  Select,
   ChartIcon,
   DocumentIcon,
   ClipboardIcon,
@@ -18,15 +26,31 @@ import {
   StarIcon,
   ClockIcon,
   TrendingUpIcon,
-} from '@/components/Icons'
+  PlusIcon,
+  SparklesIcon,
+} from '@/components'
+
+// Utilities
+import { useAppStore } from '@/stores'
+import { apiClient } from '@/lib'
+import { formatDate, truncate } from '@/utils'
 
 export const Matches: React.FC = () => {
-  const { matches, setMatches, removeMatch, setError } = useAppStore()
+  const { matches, setMatches, addMatch, removeMatch, setError } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [selectedMatch, setSelectedMatch] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+
+  // New Match Modal State
+  const [showNewMatchModal, setShowNewMatchModal] = useState(false)
+  const [resumes, setResumes] = useState<any[]>([])
+  const [jobs, setJobs] = useState<any[]>([])
+  const [selectedResumeId, setSelectedResumeId] = useState('')
+  const [selectedJobId, setSelectedJobId] = useState('')
+  const [scoring, setScoring] = useState(false)
+  const [loadingData, setLoadingData] = useState(false)
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -62,6 +86,48 @@ export const Matches: React.FC = () => {
     setShowModal(true)
   }
 
+  // Open New Match Modal
+  const handleOpenNewMatch = async () => {
+    setShowNewMatchModal(true)
+    setLoadingData(true)
+    try {
+      const [resumesRes, jobsRes] = await Promise.all([
+        apiClient.getAllResumes(),
+        apiClient.getAllJobs(),
+      ])
+      setResumes(resumesRes.data)
+      setJobs(jobsRes.data)
+    } catch (err) {
+      setError(`Failed to load data: ${err}`)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  // Create New Match
+  const handleCreateMatch = async () => {
+    if (!selectedResumeId || !selectedJobId) {
+      setError('Please select both a resume and a job')
+      return
+    }
+
+    setScoring(true)
+    try {
+      const response = await apiClient.scoreMatch({
+        resumeId: selectedResumeId,
+        jobId: selectedJobId,
+      })
+      addMatch(response.data)
+      setShowNewMatchModal(false)
+      setSelectedResumeId('')
+      setSelectedJobId('')
+    } catch (err) {
+      setError(`Failed to create match: ${err}`)
+    } finally {
+      setScoring(false)
+    }
+  }
+
   const filteredMatches = matches.filter((m) => {
     if (filter === 'high') return m.matchScore >= 80
     if (filter === 'medium') return m.matchScore >= 60 && m.matchScore < 80
@@ -89,18 +155,27 @@ export const Matches: React.FC = () => {
         title="Match Results"
         subtitle="AI-powered candidate-job scoring analysis"
         action={
-          <Link to="/">
+          <div className="flex gap-3">
             <Button
-              variant="secondary"
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              }
+              variant="primary"
+              onClick={handleOpenNewMatch}
+              leftIcon={<PlusIcon className="w-4 h-4" />}
             >
-              Back to Dashboard
+              New Match
             </Button>
-          </Link>
+            <Link to="/">
+              <Button
+                variant="secondary"
+                leftIcon={
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                }
+              >
+                Dashboard
+              </Button>
+            </Link>
+          </div>
         }
       />
 
@@ -395,6 +470,144 @@ export const Matches: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* New Match Modal */}
+      <Modal
+        isOpen={showNewMatchModal}
+        onClose={() => {
+          setShowNewMatchModal(false)
+          setSelectedResumeId('')
+          setSelectedJobId('')
+        }}
+        title="Create New Match"
+        size="md"
+        footer={
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowNewMatchModal(false)
+                setSelectedResumeId('')
+                setSelectedJobId('')
+              }}
+              disabled={scoring}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateMatch}
+              isLoading={scoring}
+              disabled={!selectedResumeId || !selectedJobId || scoring}
+              leftIcon={<SparklesIcon className="w-4 h-4" />}
+            >
+              {scoring ? 'Scoring...' : 'Score Match'}
+            </Button>
+          </div>
+        }
+      >
+        {loadingData ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Spinner size="lg" />
+            <p className="mt-4 text-[var(--color-ink-muted)]">Loading resumes and jobs...</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Info Banner */}
+            <div className="skeuo-sunken p-4 rounded-lg flex items-start gap-3">
+              <SparklesIcon className="w-5 h-5 text-[var(--color-accent-primary)] flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-[var(--color-ink-secondary)]">
+                <p className="font-medium text-[var(--color-ink-primary)] mb-1">AI-Powered Scoring</p>
+                <p>Select a resume and job to analyze. Our AI will evaluate skills match, experience alignment, and generate a comprehensive compatibility score.</p>
+              </div>
+            </div>
+
+            {/* Resume Selection */}
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-[var(--color-ink-primary)]">
+                <div className="flex items-center gap-2">
+                  <DocumentIcon className="w-4 h-4 text-[var(--color-accent-primary)]" />
+                  Select Resume
+                </div>
+              </label>
+              {resumes.length === 0 ? (
+                <div className="skeuo-sunken p-4 rounded-lg text-center">
+                  <p className="text-sm text-[var(--color-ink-muted)] mb-3">No resumes available</p>
+                  <Link to="/resumes/upload">
+                    <Button size="sm" variant="secondary">Upload Resume</Button>
+                  </Link>
+                </div>
+              ) : (
+                <Select
+                  options={[
+                    { value: '', label: 'Choose a resume...' },
+                    ...resumes.map((r) => ({
+                      value: r.id,
+                      label: r.fileName || `Resume ${r.id.slice(0, 8)}`,
+                    })),
+                  ]}
+                  value={selectedResumeId}
+                  onChange={(e) => setSelectedResumeId(e.target.value)}
+                />
+              )}
+            </div>
+
+            {/* Job Selection */}
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-[var(--color-ink-primary)]">
+                <div className="flex items-center gap-2">
+                  <ClipboardIcon className="w-4 h-4 text-[var(--color-accent-secondary)]" />
+                  Select Job
+                </div>
+              </label>
+              {jobs.length === 0 ? (
+                <div className="skeuo-sunken p-4 rounded-lg text-center">
+                  <p className="text-sm text-[var(--color-ink-muted)] mb-3">No jobs available</p>
+                  <Link to="/jobs/create">
+                    <Button size="sm" variant="secondary">Create Job</Button>
+                  </Link>
+                </div>
+              ) : (
+                <Select
+                  options={[
+                    { value: '', label: 'Choose a job...' },
+                    ...jobs.map((j) => ({
+                      value: j.id,
+                      label: j.title || `Job ${j.id.slice(0, 8)}`,
+                    })),
+                  ]}
+                  value={selectedJobId}
+                  onChange={(e) => setSelectedJobId(e.target.value)}
+                />
+              )}
+            </div>
+
+            {/* Selection Preview */}
+            {selectedResumeId && selectedJobId && (
+              <div className="skeuo-raised p-4 rounded-lg animate-fade-in">
+                <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-ink-primary)] mb-3">
+                  <CheckIcon className="w-4 h-4 text-[var(--color-success)]" />
+                  Ready to Score
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-[var(--color-ink-muted)]">Resume</p>
+                    <p className="font-medium text-[var(--color-ink-primary)]">
+                      {resumes.find((r) => r.id === selectedResumeId)?.fileName || 'Selected'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[var(--color-ink-muted)]">Job</p>
+                    <p className="font-medium text-[var(--color-ink-primary)]">
+                      {jobs.find((j) => j.id === selectedJobId)?.title || 'Selected'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </PageContainer>
   )
 }

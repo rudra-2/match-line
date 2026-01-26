@@ -53,7 +53,7 @@ async def score_match(request: ScoreRequest) -> ScoreResponse:
 
     try:
         start = time.time()
-        logger.info(f"▶ Processing scoring request")
+        logger.info("Processing scoring request...")
 
         result = scoring_engine.score_match(
             resume_text=request.resume_text,

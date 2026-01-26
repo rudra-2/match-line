@@ -76,7 +76,7 @@ def validate_score_response(data: dict) -> bool:
         "matched_skills",
         "missing_skills",
         "experience_gap",
-        "match_score",
+        "skill_overlap_percentage",  # This is what the LLM prompt asks for
         "summary",
     ]
 

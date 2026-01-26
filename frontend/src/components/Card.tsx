@@ -4,12 +4,14 @@ interface CardProps {
     children: React.ReactNode
     className?: string
     hover?: boolean
+    style?: React.CSSProperties
 }
 
 export const Card: React.FC<CardProps> = ({
     children,
     className = '',
     hover = false,
+    style,
 }) => {
     return (
         <div
@@ -19,6 +21,7 @@ export const Card: React.FC<CardProps> = ({
         ${hover ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer' : ''}
         ${className}
       `}
+            style={style}
         >
             {children}
         </div>

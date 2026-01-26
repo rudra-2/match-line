@@ -83,9 +83,16 @@ class ScoringEngine:
     def _call_llm_scorer(self, resume_text: str, job_description: str, job_requirements: str) -> Dict:
         """Call LLM for intelligent skill extraction and reasoning"""
         prompt = get_scoring_prompt(resume_text, job_description, job_requirements)
+        
+        # Log what we're sending to help debug
+        logger.debug(f"Resume text (first 200 chars): {resume_text[:200]}")
+        logger.debug(f"Job description (first 200 chars): {job_description[:200]}")
 
         try:
             result = self.llm.generate_json(prompt)
+            
+            # Log the LLM response for debugging
+            logger.debug(f"LLM response: {result}")
 
             if not result or not validate_score_response(result):
                 raise ValueError("Invalid LLM response format")

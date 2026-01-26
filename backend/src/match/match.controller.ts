@@ -24,11 +24,16 @@ export class MatchController {
   /**
    * Score a resume against a job
    * Calls AI service for intelligent matching
+   * @param force - If true, re-score even if match exists
    */
   @Post('score')
   @HttpCode(HttpStatus.CREATED)
-  async score(@Body() createMatchDto: CreateMatchDto): Promise<MatchScoreResponseDto> {
-    return this.matchService.score(createMatchDto);
+  async score(
+    @Body() createMatchDto: CreateMatchDto,
+    @Query('force') force?: string,
+  ): Promise<MatchScoreResponseDto> {
+    const forceRescore = force === 'true';
+    return this.matchService.score(createMatchDto, forceRescore);
   }
 
   /**
@@ -50,6 +55,14 @@ export class MatchController {
     @Query('jobId') jobId?: string,
   ): Promise<MatchScoreResponseDto[]> {
     return this.matchService.findAll(resumeId, jobId);
+  }
+
+  /**
+   * Get all matches for a job with resume details, sorted by score desc
+   */
+  @Get('job/:jobId/scores')
+  async getJobScoreHistory(@Param('jobId') jobId: string) {
+    return this.matchService.findByJobWithResumes(jobId);
   }
 
   /**

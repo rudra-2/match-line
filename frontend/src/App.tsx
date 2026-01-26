@@ -1,11 +1,17 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Navbar } from '@/components/Navbar'
-import { Dashboard } from '@/pages/Dashboard'
-import { Resumes } from '@/pages/Resumes'
-import { UploadResume } from '@/pages/UploadResume'
-import { Jobs } from '@/pages/Jobs'
-import { CreateJob } from '@/pages/CreateJob'
-import { Matches } from '@/pages/Matches'
+
+// Components
+import { Navbar } from '@/components'
+
+// Pages
+import {
+    Dashboard,
+    Resumes,
+    UploadResume,
+    Jobs,
+    CreateJob,
+    Matches,
+} from '@/pages'
 
 function App() {
     return (

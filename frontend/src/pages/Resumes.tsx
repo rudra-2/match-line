@@ -1,16 +1,29 @@
 import { useEffect, useState } from 'react'
-import { PageContainer, PageHeader, Grid } from '@/components/Layout'
-import { Card, CardHeader, CardBody, CardFooter } from '@/components/Card'
-import { Button } from '@/components/Button'
-import { Badge } from '@/components/Badge'
-import { Modal } from '@/components/Modal'
-import { CardLoadingSkeleton } from '@/components/LoadingSkeleton'
-import { EmptyState } from '@/components/Alert'
-import { useAppStore } from '@/stores/appStore'
-import { apiClient } from '@/lib/api'
-import { formatDate, truncate } from '@/utils/formatting'
 import { Link } from 'react-router-dom'
-import { DocumentIcon, ClockIcon, UploadIcon } from '@/components/Icons'
+
+// Components
+import {
+  PageContainer,
+  PageHeader,
+  Grid,
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Modal,
+  Button,
+  Badge,
+  CardLoadingSkeleton,
+  EmptyState,
+  DocumentIcon,
+  ClockIcon,
+  UploadIcon,
+} from '@/components'
+
+// Utilities
+import { useAppStore } from '@/stores'
+import { apiClient } from '@/lib'
+import { formatDate, truncate } from '@/utils'
 
 export const Resumes: React.FC = () => {
   const { resumes, setResumes, removeResume, setError } = useAppStore()

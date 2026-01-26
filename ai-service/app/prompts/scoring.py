@@ -11,40 +11,42 @@ Your response must be parseable JSON.
 """
 
 SCORING_PROMPT_TEMPLATE = """
-RESUME:
+TASK: Analyze the resume below and compare it to the job description. Extract ONLY the skills that ACTUALLY appear in the resume text.
+
+=== RESUME TEXT (analyze this carefully) ===
 {resume_text}
+=== END RESUME ===
 
-JOB DESCRIPTION:
+=== JOB DESCRIPTION ===
 {job_description}
+=== END JOB ===
 
-JOB REQUIREMENTS:
+=== ADDITIONAL REQUIREMENTS ===
 {job_requirements}
+=== END REQUIREMENTS ===
 
-EVALUATION CRITERIA:
-1. Extract all technical and soft skills from the resume
-2. Extract all required skills from the job description
-3. Calculate skill overlap percentage
-4. Assess experience alignment (years, level, domain)
-5. Provide match score using this formula:
-   - Skill overlap: 40%
-   - Semantic relevance: 30%
-   - Experience level: 20%
-   - Role keywords: 10%
+INSTRUCTIONS:
+1. READ the resume text above carefully
+2. Extract ONLY skills that are EXPLICITLY mentioned in the resume
+3. Compare these to skills required in the job description
+4. DO NOT invent skills that are not in the resume
+5. DO NOT use example skills from this prompt
 
-OUTPUT JSON ONLY (no markdown, no explanation):
+REQUIRED OUTPUT FORMAT (JSON only, no other text):
 {{
-  "matched_skills": ["skill1", "skill2", "skill3", "skill4", "skill5"],
-  "missing_skills": ["skill1", "skill2", "skill3"],
-  "skill_overlap_percentage": 85,
-  "experience_gap": "Minor",
-  "match_score": 82,
-  "summary": "Strong alignment with core backend requirements. Minor DevOps knowledge gap."
+  "matched_skills": ["actual skill from resume that matches job requirement"],
+  "missing_skills": ["skill required by job but NOT in resume"],
+  "skill_overlap_percentage": <number 0-100 based on actual overlap>,
+  "experience_gap": "<None|Minor|Moderate|Major>",
+  "summary": "<one sentence explaining the match>"
 }}
 
-RULES:
-- experience_gap must be: "None", "Minor", "Moderate", or "Major"
-- match_score must be between 0-100
-- Return only JSON, no other text
+CRITICAL RULES:
+- matched_skills: ONLY include skills that appear in BOTH the resume AND job description
+- missing_skills: Skills in job description that are NOT in the resume
+- If resume says "Java, Node.js" - those are the ONLY matched skills (not TypeScript, not NestJS, etc.)
+- experience_gap: "None", "Minor", "Moderate", or "Major"
+- Return ONLY the JSON object, nothing else
 """
 
 
