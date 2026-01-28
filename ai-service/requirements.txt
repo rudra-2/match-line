@@ -1,6 +1,3 @@
-# Match-Line AI Service
-# Python FastAPI service for intelligent resume-job matching
-# Supports multiple LLM providers: OpenAI, Ollama (FREE), or custom
 
 # Core dependencies
 fastapi==0.104.1
